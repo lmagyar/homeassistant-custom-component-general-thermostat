@@ -1,0 +1,82 @@
+{
+    "config": {
+        "step": {
+            "presets": {
+                "data": {
+                    "activity_temp": "Aktivnost",
+                    "away_temp": "Stran od doma",
+                    "comfort_temp": "Udobno",
+                    "eco_temp": "Eko",
+                    "home_temp": "Doma",
+                    "sleep_temp": "Spanje"
+                },
+                "title": "Prednastavitve temperature"
+            },
+            "user": {
+                "data": {
+                    "ac_mode": "Na\u010din hlajenja",
+                    "cold_tolerance": "Toleranca na hladno",
+                    "heater": "Stikalo aktuatorja",
+                    "hot_tolerance": "Toleranca na toplo",
+                    "max_temp": "Najvi\u0161ja ciljna temperatura",
+                    "min_cycle_duration": "Najkraj\u0161e trajanje cikla",
+                    "min_temp": "Najni\u017eja ciljna temperatura",
+                    "name": "Naziv",
+                    "target_sensor": "Senzor za temperaturo"
+                },
+                "data_description": {
+                    "ac_mode": "Nastavite aktuator, da bo obravnavan kot hladilna naprava namesto kot grelna naprava.",
+                    "cold_tolerance": "Najmanj\u0161a razlika med temperaturo, ki jo od\u010dita temperaturni senzor, in ciljno temperaturo, ki se mora spremeniti pred vklopom. Na primer, \u010de je ciljna temperatura 25 in je toleranca 0,5, se bo grelnik zagnal, ko bo senzor enak ali padel pod 24,5.",
+                    "heater": "Entiteta za preklapljanje, ki se uporablja za hlajenje ali ogrevanje, odvisno od na\u010dina klimatizacije.",
+                    "hot_tolerance": "Najmanj\u0161a razlika med temperaturo, ki jo od\u010dita temperaturni senzor, in ciljno temperaturo, ki se mora spremeniti pred izklopom. Na primer, \u010de je ciljna temperatura 25 in je toleranca 0,5, se bo grelnik ustavil, ko bo senzor dosegel ali presegel 25,5.",
+                    "min_cycle_duration": "Nastavi najkraj\u0161i \u010das, v katerem mora biti navedeno stikalo v trenutnem stanju, preden se izklopi ali vklopi.",
+                    "target_sensor": "Temperaturni senzor, ki odra\u017ea trenutno temperaturo."
+                },
+                "description": "Ustvari klimatsko entiteto, ki nadzoruje temperaturo prek stikala in senzorja.",
+                "title": "Ustvari generi\u010dni termostat"
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "ac_mode": "Na\u010din hlajenja",
+                    "cold_tolerance": "Toleranca na hladno",
+                    "heater": "Stikalo aktuatorja",
+                    "hot_tolerance": "Toleranca na toplo",
+                    "max_temp": "Najvi\u0161ja ciljna temperatura",
+                    "min_cycle_duration": "Najkraj\u0161e trajanje cikla",
+                    "min_temp": "Najni\u017eja ciljna temperatura",
+                    "target_sensor": "Temperaturni senzor"
+                },
+                "data_description": {
+                    "ac_mode": "Nastavite aktuator, da bo obravnavan kot hladilna naprava namesto kot grelna naprava.",
+                    "cold_tolerance": "Najmanj\u0161a razlika med temperaturo, ki jo od\u010dita temperaturni senzor, in ciljno temperaturo, ki se mora spremeniti pred vklopom. Na primer, \u010de je ciljna temperatura 25 in je toleranca 0,5, se bo grelnik zagnal, ko bo senzor enak ali padel pod 24,5.",
+                    "heater": "Entiteta za preklapljanje, ki se uporablja za hlajenje ali ogrevanje, odvisno od na\u010dina klimatizacije.",
+                    "hot_tolerance": "Najmanj\u0161a razlika med temperaturo, ki jo od\u010dita temperaturni senzor, in ciljno temperaturo, ki se mora spremeniti pred izklopom. Na primer, \u010de je ciljna temperatura 25 in je toleranca 0,5, se bo grelnik ustavil, ko bo senzor dosegel ali presegel 25,5.",
+                    "min_cycle_duration": "Nastavi najkraj\u0161i \u010das, v katerem mora biti navedeno stikalo v trenutnem stanju, preden se izklopi ali vklopi.",
+                    "target_sensor": "Temperaturni senzor, ki odra\u017ea trenutno temperaturo."
+                }
+            },
+            "presets": {
+                "data": {
+                    "activity_temp": "Aktivnost",
+                    "away_temp": "Stran od doma",
+                    "comfort_temp": "Udobno",
+                    "eco_temp": "Eko",
+                    "home_temp": "Doma",
+                    "sleep_temp": "Spanje"
+                },
+                "title": "Prednastavitve temperature"
+            }
+        }
+    },
+    "services": {
+        "reload": {
+            "description": "Ponovno nalo\u017ei generi\u010dni termostat iz YAML konfiguracije.",
+            "name": "Ponovno nalo\u017ei"
+        }
+    },
+    "title": "Generi\u010dni termostat"
+}
