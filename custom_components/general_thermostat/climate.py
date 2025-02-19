@@ -345,7 +345,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity):
                 STATE_UNKNOWN,
             ):
                 self._async_update_temp(sensor_state)
-                await self._async_control_heating()
+                await self._async_control_heating(force=True)
                 self.async_write_ha_state()
             switch_state = self.hass.states.get(self.heater_entity_id)
             if switch_state and switch_state.state not in (
