@@ -337,7 +337,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity):
             self._hvac_mode = HVACMode.OFF
 
         @callback
-        async def _async_startup(_: Event | None = None) -> None:
+        def _async_startup(_: Event | None = None) -> None:
             """Init on startup."""
             sensor_state = self.hass.states.get(self.sensor_entity_id)
             if sensor_state and sensor_state.state not in (
@@ -345,7 +345,6 @@ class GeneralThermostat(ClimateEntity, RestoreEntity):
                 STATE_UNKNOWN,
             ):
                 self._async_update_temp(sensor_state)
-                await self._async_control_heating(force=True)
                 self.async_write_ha_state()
             switch_state = self.hass.states.get(self.heater_entity_id)
             if switch_state and switch_state.state not in (
@@ -357,7 +356,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity):
                 )
 
         if self.hass.state is CoreState.running:
-            await _async_startup()
+            _async_startup()
         else:
             self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, _async_startup)
 
@@ -460,16 +459,20 @@ class GeneralThermostat(ClimateEntity, RestoreEntity):
         self.async_write_ha_state()
 
     async def _check_switch_initial_state(self) -> None:
-        """Prevent the device from keep running if HVACMode.OFF."""
-        if self._hvac_mode == HVACMode.OFF and self._is_device_active:
-            _LOGGER.warning(
-                (
-                    "The climate mode is OFF, but the switch device is ON. Turning off"
-                    " device %s"
-                ),
-                self.heater_entity_id,
-            )
-            await self._async_heater_turn_off()
+        """Prevent the device from keep running if HVACMode.OFF or update heater switch state if not HVACMode.OFF."""
+        if self._hvac_mode == HVACMode.OFF:
+            if self._is_device_active:
+                _LOGGER.warning(
+                    (
+                        "The climate mode is OFF, but the switch device is ON. Turning off"
+                        " device %s"
+                    ),
+                    self.heater_entity_id,
+                )
+                await self._async_heater_turn_off()
+        else:
+            await self._async_control_heating(force=True)
+            self.async_write_ha_state()
 
     @callback
     def _async_switch_changed(self, event: Event[EventStateChangedData]) -> None:
