@@ -337,7 +337,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity):
             self._hvac_mode = HVACMode.OFF
 
         @callback
-        def _async_startup(_: Event | None = None) -> None:
+        async def _async_startup(_: Event | None = None) -> None:
             """Init on startup."""
             sensor_state = self.hass.states.get(self.sensor_entity_id)
             if sensor_state and sensor_state.state not in (
@@ -345,6 +345,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity):
                 STATE_UNKNOWN,
             ):
                 self._async_update_temp(sensor_state)
+                await self._async_control_heating()
                 self.async_write_ha_state()
             switch_state = self.hass.states.get(self.heater_entity_id)
             if switch_state and switch_state.state not in (
@@ -356,7 +357,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity):
                 )
 
         if self.hass.state is CoreState.running:
-            _async_startup()
+            await _async_startup()
         else:
             self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, _async_startup)
 
