@@ -1,9 +1,10 @@
 
 # General Thermostat
 
-This is a fork of the official [`generic_thermostat`](https://www.home-assistant.io/integrations/generic_thermostat/) component/integration reverting breaking changes:
+This is a fork of the official [`generic_thermostat`](https://www.home-assistant.io/integrations/generic_thermostat/) component/integration:
 
-- [Auto select thermostat preset when selecting temperature #134146](https://github.com/home-assistant/core/pull/134146)
+- Reverting breaking changes introduced in 2025.2 [Auto select thermostat preset when selecting temperature #134146](https://github.com/home-assistant/core/pull/134146)
+- Fixing: After reload recalculate the switch state, because sensor temperature maybe changed as much during restart that it requires it (a restart can be caused by a longer power outage also)
 
 ## Installation
 
