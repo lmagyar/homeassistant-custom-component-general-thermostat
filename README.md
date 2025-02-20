@@ -6,6 +6,7 @@ This is a fork of the official Home Assistant [`generic_thermostat`](https://www
 - Reverting breaking changes introduced in 2025.2 [Auto select thermostat preset when selecting temperature #134146](https://github.com/home-assistant/core/pull/134146)
 - Fixing: After reload recalculate the switch state, because sensor temperature maybe changed as much during restart that it requires it (a restart can be caused by a longer power outage also)
 - Fixing: After reload in preset mode don't restore wrong target temp when going back to none preset
+- Fixing: Remember changed preset temp like remembering non-preset temp
 
 ## Installation
 
