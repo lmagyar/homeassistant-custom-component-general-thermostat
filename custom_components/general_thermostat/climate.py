@@ -246,7 +246,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity):
         self._hot_tolerance = hot_tolerance
         self._keep_alive = keep_alive
         self._hvac_mode = initial_hvac_mode
-        self._saved_target_temp = target_temp or next(iter(presets.values()), None)
+        self._saved_target_temp = target_temp
         self._temp_precision = precision
         self._temp_target_temperature_step = target_temperature_step
         if self.ac_mode:
@@ -599,14 +599,17 @@ class GeneralThermostat(ClimateEntity, RestoreEntity):
             # I don't think we need to call async_write_ha_state if we didn't change the state
             return
         if preset_mode == PRESET_NONE:
+            self._presets[self._attr_preset_mode] = self._target_temp
             self._attr_preset_mode = PRESET_NONE
-            self._target_temp = self._saved_target_temp
-            await self._async_control_heating(force=True)
+            if self._saved_target_temp is not None:
+                self._target_temp = self._saved_target_temp
         else:
             if self._attr_preset_mode == PRESET_NONE:
                 self._saved_target_temp = self._target_temp
+            else:
+                self._presets[self._attr_preset_mode] = self._target_temp
             self._attr_preset_mode = preset_mode
             self._target_temp = self._presets[preset_mode]
-            await self._async_control_heating(force=True)
 
+        await self._async_control_heating(force=True)
         self.async_write_ha_state()
