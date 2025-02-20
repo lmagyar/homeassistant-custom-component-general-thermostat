@@ -297,30 +297,6 @@ class GeneralThermostat(ClimateEntity, RestoreEntity):
                 )
             )
 
-        @callback
-        def _async_startup(_: Event | None = None) -> None:
-            """Init on startup."""
-            sensor_state = self.hass.states.get(self.sensor_entity_id)
-            if sensor_state and sensor_state.state not in (
-                STATE_UNAVAILABLE,
-                STATE_UNKNOWN,
-            ):
-                self._async_update_temp(sensor_state)
-                self.async_write_ha_state()
-            switch_state = self.hass.states.get(self.heater_entity_id)
-            if switch_state and switch_state.state not in (
-                STATE_UNAVAILABLE,
-                STATE_UNKNOWN,
-            ):
-                self.hass.async_create_task(
-                    self._check_switch_initial_state(), eager_start=True
-                )
-
-        if self.hass.state is CoreState.running:
-            _async_startup()
-        else:
-            self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, _async_startup)
-
         # Check If we have an old state
         if (old_state := await self.async_get_last_state()) is not None:
             # If we have no initial temperature, restore
@@ -359,6 +335,30 @@ class GeneralThermostat(ClimateEntity, RestoreEntity):
         # Set default state to off
         if not self._hvac_mode:
             self._hvac_mode = HVACMode.OFF
+
+        @callback
+        def _async_startup(_: Event | None = None) -> None:
+            """Init on startup."""
+            sensor_state = self.hass.states.get(self.sensor_entity_id)
+            if sensor_state and sensor_state.state not in (
+                STATE_UNAVAILABLE,
+                STATE_UNKNOWN,
+            ):
+                self._async_update_temp(sensor_state)
+                self.async_write_ha_state()
+            switch_state = self.hass.states.get(self.heater_entity_id)
+            if switch_state and switch_state.state not in (
+                STATE_UNAVAILABLE,
+                STATE_UNKNOWN,
+            ):
+                self.hass.async_create_task(
+                    self._check_switch_initial_state(), eager_start=True
+                )
+
+        if self.hass.state is CoreState.running:
+            _async_startup()
+        else:
+            self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, _async_startup)
 
     @property
     def precision(self) -> float:
@@ -459,16 +459,20 @@ class GeneralThermostat(ClimateEntity, RestoreEntity):
         self.async_write_ha_state()
 
     async def _check_switch_initial_state(self) -> None:
-        """Prevent the device from keep running if HVACMode.OFF."""
-        if self._hvac_mode == HVACMode.OFF and self._is_device_active:
-            _LOGGER.warning(
-                (
-                    "The climate mode is OFF, but the switch device is ON. Turning off"
-                    " device %s"
-                ),
-                self.heater_entity_id,
-            )
-            await self._async_heater_turn_off()
+        """Prevent the device from keep running if HVACMode.OFF or update heater switch state if not HVACMode.OFF."""
+        if self._hvac_mode == HVACMode.OFF:
+            if self._is_device_active:
+                _LOGGER.warning(
+                    (
+                        "The climate mode is OFF, but the switch device is ON. Turning off"
+                        " device %s"
+                    ),
+                    self.heater_entity_id,
+                )
+                await self._async_heater_turn_off()
+        else:
+            await self._async_control_heating(force=True)
+            self.async_write_ha_state()
 
     @callback
     def _async_switch_changed(self, event: Event[EventStateChangedData]) -> None:
