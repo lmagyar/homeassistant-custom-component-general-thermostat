@@ -10,6 +10,8 @@ from homeassistant.components.climate import (
 )
 from homeassistant.const import Platform
 
+ATTR_PRESET_TEMPERATURES = "preset_temperatures"
+
 DOMAIN = "general_thermostat"
 
 PLATFORMS = [Platform.CLIMATE]
