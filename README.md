@@ -3,6 +3,7 @@
 
 This is a fork of the official Home Assistant [`generic_thermostat`](https://www.home-assistant.io/integrations/generic_thermostat/) component/integration:
 
+- Remember changed preset temps over restarts (store them in state attribute)
 - Remember changed preset temps like remembering non-preset temp
 - Bugfix: After restart in preset mode don't restore wrong target temp when going back to none preset
 - Bugfix: After restart recalculate the switch state, because sensor temperature maybe changed as much during restart that it requires it (a restart can be caused by a longer power outage also)
