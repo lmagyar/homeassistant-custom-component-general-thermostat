@@ -48,6 +48,8 @@ Full blown demo (with dummy temperature sensor and dummy thermostat switch):
 - Read-only sensors for the preset temperatures
 - Number entities for preset manipulation, even when the thermostat is not in that preset
 
+![Screenshot](https://github.com/lmagyar/homeassistant-custom-component-general-thermostat/raw/main/res/screenshot.png)
+
 ### Configuration
 
 ```
