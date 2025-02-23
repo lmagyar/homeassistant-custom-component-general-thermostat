@@ -36,3 +36,5 @@ CONF_PRESETS = {
 }
 CONF_SENSOR = "target_sensor"
 DEFAULT_TOLERANCE = 0.3
+
+SERVICE_SET_PRESET_TEMPERATURE = "set_preset_temperature"
