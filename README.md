@@ -3,6 +3,7 @@
 
 This is a fork of the official Home Assistant [`generic_thermostat`](https://www.home-assistant.io/integrations/generic_thermostat/) component/integration:
 
+- New service/action to change preset temperature even when the thermostat is not in that specific preset
 - Remember changed preset temps over restarts (store them in state attribute `preset_temperatures`)
   - Note: Due to a bug in the UI, Developer tools / States / Attributes column doesn't refresh automatically this attribute, because this is not a plain string attribute, but a list of strings, so you have to refresh the page to see the changes
 - Remember changed preset temps like remembering non-preset temp
@@ -28,26 +29,129 @@ This is a fork of the official Home Assistant [`generic_thermostat`](https://www
   - Do not remove: `away_temp: xx` or any other currently used preset temps, these are required to enable these presets, but these values will be used only on the first ever startup, later the saved values will be used
 - Restart Home Assistant
 
-**Note:** Currently you can change preset temperatures only by selecting that preset and changing the target temperature. I'm planning to add a new `set_preset_temperature` service.
+## Services
+
+### general_thermostat.set_preset_temperature
+
+```
+action: general_thermostat.set_preset_temperature
+target:
+  entity_id: climate.living_room_thermostat
+data:
+  preset_mode: away
+  temperature: 17
+```
 
 ## Extras
 
-You can create sensors to show the saved normal and preset temperatures:
+Full blown demo (with dummy temperature sensor and dummy thermostat switch):
+- Read-only sensors for the preset temperatures
+- Number entities for preset manipulation, even when the thermostat is not in that preset
+
+### Configuration
 
 ```
+climate:
+  - platform: general_thermostat
+    name: Living room Thermostat
+    heater: input_boolean.living_room_thermostat_switch
+    target_sensor: sensor.living_room_temperature
+    min_temp: 15
+    max_temp: 25
+    target_temp_step: 0.5
+    ac_mode: false
+    cold_tolerance: 0.1
+    hot_tolerance: 0.1
+    away_temp: 18
+    precision: 0.1
+
+input_boolean:
+
+  # Just a dummy fake switch for demonstration
+  living_room_thermostat_switch:
+    name: Living room Thermostat switch
+    icon: mdi:sofa
+    initial: false
+
 template:
 
   - sensor:
 
-      - name: "Living room normal target temperature"
-        state: '{{ state_attr("climate.living_room_thermostat", "preset_temperatures")[state_attr("climate.living_room_thermostat", "preset_modes").index("none")] }}'
-        state_class: measurement
-        unit_of_measurement: '°C'
-        device_class: temperature
+    # Just a dummy fake sensor for demonstration
+    - name: "Living room temperature"
+      state: 22
+      state_class: measurement
+      unit_of_measurement: '°C'
+      device_class: temperature
 
-      - name: "Living room away target temperature"
-        state: '{{ state_attr("climate.living_room_thermostat", "preset_temperatures")[state_attr("climate.living_room_thermostat", "preset_modes").index("away")] }}'
-        state_class: measurement
-        unit_of_measurement: '°C'
-        device_class: temperature
+    # Read-only sensor for none preset temperature
+    - name: "Living room normal target temperature"
+      state: '{{ state_attr("climate.living_room_thermostat", "preset_temperatures")[state_attr("climate.living_room_thermostat", "preset_modes").index("none")] }}'
+      state_class: measurement
+      unit_of_measurement: '°C'
+      device_class: temperature
+
+    # Read-only sensor for away preset temperature
+    - name: "Living room away target temperature"
+      state: '{{ state_attr("climate.living_room_thermostat", "preset_temperatures")[state_attr("climate.living_room_thermostat", "preset_modes").index("away")] }}'
+      state_class: measurement
+      unit_of_measurement: '°C'
+      device_class: temperature
+
+  - number:
+
+    # Number entity for none preset manipulation, even when the thermostat is not in none preset
+    - name: "Living room normal target temperature"
+      min: '{{ state_attr("climate.living_room_thermostat", "min_temp") | float(default=15) }}'
+      max: '{{ state_attr("climate.living_room_thermostat", "max_temp") | float(default=25) }}'
+      step: '{{ state_attr("climate.living_room_thermostat", "target_temp_step") | float(default=0.5) }}'
+      unit_of_measurement: '°C'
+      icon: 'mdi:thermometer'
+      state: '{{ state_attr("climate.living_room_thermostat", "preset_temperatures")[state_attr("climate.living_room_thermostat", "preset_modes").index("none")] }}'
+      set_value :
+        - action: general_thermostat.set_preset_temperature
+          target:
+            entity_id: climate.living_room_thermostat
+          data:
+            preset_mode: none
+            temperature: '{{ value }}'
+
+    # Number entity for away preset manipulation, even when the thermostat is not in away preset
+    - name: "Living room away target temperature"
+      min: '{{ state_attr("climate.living_room_thermostat", "min_temp") | float(default=15) }}'
+      max: '{{ state_attr("climate.living_room_thermostat", "max_temp") | float(default=25) }}'
+      step: '{{ state_attr("climate.living_room_thermostat", "target_temp_step") | float(default=0.5) }}'
+      unit_of_measurement: '°C'
+      icon: 'mdi:thermometer'
+      state: '{{ state_attr("climate.living_room_thermostat", "preset_temperatures")[state_attr("climate.living_room_thermostat", "preset_modes").index("away")] }}'
+      set_value :
+        - action: general_thermostat.set_preset_temperature
+          target:
+            entity_id: climate.living_room_thermostat
+          data:
+            preset_mode: away
+            temperature: '{{ value }}'
+```
+
+### Dashboard section
+
+```
+type: grid
+cards:
+  - type: entities
+    entities:
+      - entity: sensor.living_room_temperature
+      - entity: input_boolean.living_room_thermostat_switch
+  - type: thermostat
+    entity: climate.living_room_thermostat
+    show_current_as_primary: true
+    features:
+      - style: icons
+        type: climate-preset-modes
+  - type: entities
+    entities:
+      - entity: sensor.living_room_normal_target_temperature
+      - entity: sensor.living_room_away_target_temperature
+      - entity: number.living_room_normal_target_temperature
+      - entity: number.living_room_away_target_temperature
 ```
