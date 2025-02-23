@@ -3,7 +3,8 @@
 
 This is a fork of the official Home Assistant [`generic_thermostat`](https://www.home-assistant.io/integrations/generic_thermostat/) component/integration:
 
-- Remember changed preset temps over restarts (store them in state attribute)
+- Remember changed preset temps over restarts (store them in state attribute `preset_temperatures`)
+  - Note: Due to a bug in the UI, Developer tools / States / Attributes column doesn't refresh automatically this attribute, because this is not a plain string attribute, but a list of strings, so you have to refresh the page to see the changes
 - Remember changed preset temps like remembering non-preset temp
 - Bugfix: After restart in preset mode don't restore wrong target temp when going back to none preset
 - Bugfix: After restart recalculate the switch state, because sensor temperature maybe changed as much during restart that it requires it (a restart can be caused by a longer power outage also)
@@ -11,7 +12,7 @@ This is a fork of the official Home Assistant [`generic_thermostat`](https://www
 
 ## Installation
 
-1. Navigate in your Home Assistant frontend to **HACS**
+1. Navigate in your Home Assistant frontend to **HACS** (if you don't have HACS, see how to install it: https://www.hacs.xyz/docs/use/)
 1. In the **...** menu at the top right corner click **Custom repositories**,
    add
    `https://github.com/lmagyar/homeassistant-custom-component-general-thermostat`
