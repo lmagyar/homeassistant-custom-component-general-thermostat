@@ -19,8 +19,35 @@ This is a fork of the official Home Assistant [`generic_thermostat`](https://www
    as `Integration`.
 1. Find the "General Thermostat" integration and click it.
 1. Click on the "DOWNLOAD" button.
+1. Restart Home Assistant
 
 ## How to use
 
-- Replace all `platform: generic_thermostat` with `platform: general_thermostat` in your .yaml files
+- Replace all `platform: generic_thermostat` with `platform: general_thermostat` in your .yaml files - Note the change from gener**IC** to gener**AL**
+  - Remove: `target_temp: xx` lines
+  - Do not remove: `away_temp: xx` or any other currently used preset temps, these are required to enable these presets, but these values will be used only on the first ever startup, later the saved values will be used
 - Restart Home Assistant
+
+**Note:** Currently you can change preset temperatures only by selecting that preset and changing the target temperature. I'm planning to add a new `set_preset_temperature` service.
+
+## Extras
+
+You can create sensors to show the saved normal and preset temperatures:
+
+```
+template:
+
+  - sensor:
+
+      - name: "Living room normal target temperature"
+        state: '{{ state_attr("climate.living_room_thermostat", "preset_temperatures")[state_attr("climate.living_room_thermostat", "preset_modes").index("none")] }}'
+        state_class: measurement
+        unit_of_measurement: '°C'
+        device_class: temperature
+
+      - name: "Living room away target temperature"
+        state: '{{ state_attr("climate.living_room_thermostat", "preset_temperatures")[state_attr("climate.living_room_thermostat", "preset_modes").index("away")] }}'
+        state_class: measurement
+        unit_of_measurement: '°C'
+        device_class: temperature
+```
