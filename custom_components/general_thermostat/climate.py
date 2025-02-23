@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from datetime import datetime, timedelta
 import logging
 import math
-from typing import Any
+from typing import Any, final
 
 import voluptuous as vol
 
@@ -47,8 +47,8 @@ from homeassistant.core import (
     State,
     callback,
 )
-from homeassistant.exceptions import ConditionError
-from homeassistant.helpers import condition, config_validation as cv
+from homeassistant.exceptions import ConditionError, ServiceValidationError
+from homeassistant.helpers import condition, config_validation as cv, entity_platform
 from homeassistant.helpers.device import async_device_info_to_link_from_entity
 from homeassistant.helpers.entity_platform import (
     # AddConfigEntryEntitiesCallback,
@@ -76,6 +76,7 @@ from .const import (
     DEFAULT_TOLERANCE,
     DOMAIN,
     PLATFORMS,
+    SERVICE_SET_PRESET_TEMPERATURE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -205,6 +206,18 @@ async def _async_setup_config(
                 unique_id,
             )
         ]
+    )
+
+    platform = entity_platform.async_get_current_platform()
+
+    platform.async_register_entity_service(
+        SERVICE_SET_PRESET_TEMPERATURE,
+        {
+            vol.Required(ATTR_PRESET_MODE): cv.string,
+            vol.Required(ATTR_TEMPERATURE): vol.Coerce(float),
+        },
+        "async_handle_set_preset_temperature_service",
+        [ClimateEntityFeature.PRESET_MODE],
     )
 
 CACHED_PROPERTIES_WITH_ATTR_ = {
@@ -646,3 +659,29 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
 
         await self._async_control_heating(force=True)
         self.async_write_ha_state()
+
+    @final
+    async def async_handle_set_preset_temperature_service(self, preset_mode: str, temperature: float) -> None:
+        """Validate and set new preset temperature."""
+        self._valid_mode_or_raise("preset", preset_mode, self.preset_modes)
+        min_temp = self.min_temp
+        max_temp = self.max_temp
+        if temperature < min_temp or temperature > max_temp:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="temp_out_of_range",
+                translation_placeholders={
+                    "check_temp": str(temperature),
+                    "min_temp": str(min_temp),
+                    "max_temp": str(max_temp),
+                },
+            )
+        await self.async_set_preset_temperature(preset_mode, temperature)
+
+    async def async_set_preset_temperature(self, preset_mode: str, temperature: float) -> None:
+        """Set new preset temperature."""
+        if preset_mode == self._attr_preset_mode:
+            await self.async_set_temperature(temperature=temperature)
+        else:
+            self._attr_preset_temperatures[self._attr_preset_modes.index(preset_mode)] = temperature
+            self.async_write_ha_state()
