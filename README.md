@@ -73,7 +73,7 @@ input_boolean:
 
   # Just a dummy fake switch for demonstration
   demo_living_room_thermostat_switch:
-    name: Living room Thermostat switch
+    name: Demo Living room Thermostat switch
     icon: mdi:sofa
     initial: false
 
