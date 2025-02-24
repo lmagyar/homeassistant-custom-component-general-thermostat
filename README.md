@@ -29,7 +29,7 @@ This is a fork of the official Home Assistant [`generic_thermostat`](https://www
   - Do not remove: `away_temp: xx` or any other currently used preset temps, these are required to enable these presets, but these values will be used only on the first ever startup, later the saved values will be used
 - Restart Home Assistant
 
-## Services
+## Services / Actions
 
 ### general_thermostat.set_preset_temperature
 
