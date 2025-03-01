@@ -140,7 +140,7 @@ template:
 ### Dashboard section
 
 ```
-type: grid
+type: vertical-stack
 cards:
   - type: entities
     entities:
