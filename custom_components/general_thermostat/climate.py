@@ -9,6 +9,7 @@ import logging
 import math
 from typing import Any, final
 
+from propcache.api import cached_property
 import voluptuous as vol
 
 from homeassistant.components.climate import (
@@ -243,7 +244,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
 
         return data
 
-    @property
+    @cached_property
     def preset_temperatures(self) -> list[float] | None:
         """Return a list of available preset temperatures.
 
@@ -337,6 +338,8 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
                 )
             )
 
+        new_preset_temperatures = self._attr_preset_temperatures.copy()
+
         # Check If we have an old state
         if (old_state := await self.async_get_last_state()) is not None:
             # If we have no initial temperature, restore
@@ -364,7 +367,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
             ):
                 for mode, temp in zip(old_preset_modes, old_preset_temperatures):
                     if mode in self._attr_preset_modes and temp:
-                        self._attr_preset_temperatures[self._attr_preset_modes.index(mode)] = float(temp)
+                        new_preset_temperatures[self._attr_preset_modes.index(mode)] = float(temp)
             if not self._hvac_mode and old_state.state:
                 self._hvac_mode = HVACMode(old_state.state)
 
@@ -379,12 +382,16 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
                 "No previously saved temperature, setting to %s", self._target_temp
             )
 
-        self._attr_preset_temperatures[self._attr_preset_modes.index(self._attr_preset_mode)] = self._target_temp
-        if not self._attr_preset_temperatures[0]:
-            self._attr_preset_temperatures[0] = self.max_temp if self.ac_mode else self.min_temp
+        new_preset_temperatures[self._attr_preset_modes.index(self._attr_preset_mode)] = self._target_temp
+        if not new_preset_temperatures[0]:
+            new_preset_temperatures[0] = self.max_temp if self.ac_mode else self.min_temp
             _LOGGER.warning(
-                "No previously saved 'none' preset temperature, setting to %s", self._attr_preset_temperatures[0]
+                "No previously saved 'none' preset temperature, setting to %s", new_preset_temperatures[0]
             )
+
+        # Attribute setting is required by @cached_property
+        if new_preset_temperatures != self._attr_preset_temperatures:
+            self._attr_preset_temperatures = new_preset_temperatures
 
         # Set default state to off
         if not self._hvac_mode:
@@ -413,6 +420,13 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
             _async_startup()
         else:
             self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, _async_startup)
+
+    def _set_preset_temperature_attr(self, preset_mode: str, temperature: float) -> None:
+        index = self._attr_preset_modes.index(preset_mode)
+        if self._attr_preset_temperatures[index] != temperature:
+            new_preset_temperatures = self._attr_preset_temperatures.copy()
+            new_preset_temperatures[index] = temperature
+            self._attr_preset_temperatures = new_preset_temperatures
 
     @property
     def precision(self) -> float:
@@ -481,7 +495,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         if (temperature := kwargs.get(ATTR_TEMPERATURE)) is None:
             return
         self._target_temp = temperature
-        self._attr_preset_temperatures[self._attr_preset_modes.index(self._attr_preset_mode)] = self._target_temp
+        self._set_preset_temperature_attr(self._attr_preset_mode, self._target_temp)
         await self._async_control_heating(force=True)
         self.async_write_ha_state()
 
@@ -683,5 +697,5 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         if preset_mode == self._attr_preset_mode:
             await self.async_set_temperature(temperature=temperature)
         else:
-            self._attr_preset_temperatures[self._attr_preset_modes.index(preset_mode)] = temperature
+            self._set_preset_temperature_attr(preset_mode, temperature)
             self.async_write_ha_state()
