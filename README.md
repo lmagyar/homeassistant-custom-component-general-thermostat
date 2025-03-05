@@ -3,13 +3,17 @@
 
 This is a fork of the official Home Assistant [`generic_thermostat`](https://www.home-assistant.io/integrations/generic_thermostat/) component/integration:
 
-- New service/action to change preset temperature even when the thermostat is not in that specific preset
-- Remember changed preset temps over restarts (store them in state attribute `preset_temperatures`)
-  - Note: Due to a bug in the UI, Developer tools / States / Attributes column doesn't refresh automatically this attribute, because this is not a plain string attribute, but a list of strings, so you have to refresh the page to see the changes
-- Remember changed preset temps like remembering non-preset temp
-- Bugfix: After restart in preset mode don't restore wrong target temp when going back to none preset
-- Bugfix: After restart recalculate the switch state, because sensor temperature maybe changed as much during restart that it requires it (a restart can be caused by a longer power outage also)
-- Reverting breaking changes introduced in 2025.2 [Auto select thermostat preset when selecting temperature #134146](https://github.com/home-assistant/core/pull/134146)
+Changes:
+- Preset temperatures can be changed
+  - Remembers changed preset temperatures, even over restarts (stores them in state attribute `preset_temperatures`)
+  - New service/action `general_thermostat.set_preset_temperature` added to change preset temperatures even when the thermostat is not in that specific preset
+  - Auto-updates the preset temperature when that particular preset is selected
+
+- Reverts breaking changes introduced in 2025.2 [Auto select thermostat preset when selecting temperature #134146](https://github.com/home-assistant/core/pull/134146)
+
+- Bugfixes in the original generic_thermostat code:
+  - After restart recalculate the switch state, because sensor temperature maybe changed as much during restart that it requires it (because a restart can be caused by a longer power outage also)
+  - After restart in preset mode don't restore wrong target temp when going back to none preset (original code stored the saved non-preset temperature only in memory)
 
 ## Installation
 
