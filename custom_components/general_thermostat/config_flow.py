@@ -18,6 +18,7 @@ from homeassistant.helpers.schema_config_entry_flow import (
 
 from .const import (
     CONF_AC_MODE,
+    CONF_AUTO_UPDATE_PRESETS,
     CONF_COLD_TOLERANCE,
     CONF_HEATER,
     CONF_HOT_TOLERANCE,
@@ -69,6 +70,9 @@ OPTIONS_SCHEMA = {
             mode=selector.NumberSelectorMode.BOX, unit_of_measurement=DEGREE, step=0.1
         )
     ),
+    # vol.Optional(CONF_AUTO_UPDATE_PRESETS): selector.LabelSelector(
+    #     ###TODO
+    # ),
 }
 
 PRESETS_SCHEMA = {

@@ -17,6 +17,7 @@ DOMAIN = "general_thermostat"
 PLATFORMS = [Platform.CLIMATE]
 
 CONF_AC_MODE = "ac_mode"
+CONF_AUTO_UPDATE_PRESETS = "auto_update_presets"
 CONF_COLD_TOLERANCE = "cold_tolerance"
 CONF_HEATER = "heater"
 CONF_HOT_TOLERANCE = "hot_tolerance"

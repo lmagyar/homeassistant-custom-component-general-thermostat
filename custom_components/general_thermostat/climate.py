@@ -66,6 +66,7 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType, VolDictT
 from .const import (
     ATTR_PRESET_TEMPERATURES,
     CONF_AC_MODE,
+    CONF_AUTO_UPDATE_PRESETS,
     CONF_COLD_TOLERANCE,
     CONF_HEATER,
     CONF_HOT_TOLERANCE,
@@ -100,6 +101,9 @@ PLATFORM_SCHEMA_COMMON = vol.Schema(
         vol.Required(CONF_HEATER): cv.entity_id,
         vol.Required(CONF_SENSOR): cv.entity_id,
         vol.Optional(CONF_AC_MODE): cv.boolean,
+        vol.Optional(CONF_AUTO_UPDATE_PRESETS): vol.All(
+            cv.ensure_list_csv, [vol.In(CONF_PRESETS.keys())]
+        ),
         vol.Optional(CONF_MAX_TEMP): vol.Coerce(float),
         vol.Optional(CONF_MIN_DUR): cv.positive_time_period,
         vol.Optional(CONF_MIN_TEMP): vol.Coerce(float),
@@ -172,6 +176,7 @@ async def _async_setup_config(
     max_temp: float | None = config.get(CONF_MAX_TEMP)
     target_temp: float | None = config.get(CONF_TARGET_TEMP)
     ac_mode: bool | None = config.get(CONF_AC_MODE)
+    auto_update_presets: list[str] | None = config.get(CONF_AUTO_UPDATE_PRESETS)
     min_cycle_duration: timedelta | None = config.get(CONF_MIN_DUR)
     cold_tolerance: float = config[CONF_COLD_TOLERANCE]
     hot_tolerance: float = config[CONF_HOT_TOLERANCE]
@@ -184,6 +189,13 @@ async def _async_setup_config(
     target_temperature_step: float | None = config.get(CONF_TEMP_STEP)
     unit = hass.config.units.temperature_unit
 
+    if auto_update_presets is not None:
+        if any(p not in presets.keys() for p in auto_update_presets):
+            _LOGGER.error(
+                "Preset(s) in auto_update_presets that are not valid preset(s) for this thermostat (there is no initial temperature defined for these preset(s)): %s",
+                ", ".join([p for p in auto_update_presets if p not in presets.keys()]))
+            auto_update_presets = [p for p in auto_update_presets if p in presets.keys()]
+
     async_add_entities(
         [
             GeneralThermostat(
@@ -195,6 +207,7 @@ async def _async_setup_config(
                 max_temp,
                 target_temp,
                 ac_mode,
+                auto_update_presets,
                 min_cycle_duration,
                 cold_tolerance,
                 hot_tolerance,
@@ -262,6 +275,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         max_temp: float | None,
         target_temp: float | None,
         ac_mode: bool | None,
+        auto_update_presets: list[str] | None,
         min_cycle_duration: timedelta | None,
         cold_tolerance: float,
         hot_tolerance: float,
@@ -283,6 +297,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         )
         self.ac_mode = ac_mode
         self.min_cycle_duration = min_cycle_duration
+        self._auto_update_presets = auto_update_presets
         self._cold_tolerance = cold_tolerance
         self._hot_tolerance = hot_tolerance
         self._keep_alive = keep_alive
@@ -495,7 +510,13 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         if (temperature := kwargs.get(ATTR_TEMPERATURE)) is None:
             return
         self._target_temp = temperature
-        self._set_preset_temperature_attr(self._attr_preset_mode, self._target_temp)
+        force_preset_update = kwargs.get('force_preset_update')
+        if (force_preset_update is not None and force_preset_update
+            or self._auto_update_presets is None
+            or self._attr_preset_mode == PRESET_NONE
+            or self._attr_preset_mode in self._auto_update_presets
+        ):
+            self._set_preset_temperature_attr(self._attr_preset_mode, self._target_temp)
         await self._async_control_heating(force=True)
         self.async_write_ha_state()
 
@@ -695,7 +716,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
     async def async_set_preset_temperature(self, preset_mode: str, temperature: float) -> None:
         """Set new preset temperature."""
         if preset_mode == self._attr_preset_mode:
-            await self.async_set_temperature(temperature=temperature)
+            await self.async_set_temperature(temperature=temperature, force_preset_update=True)
         else:
             self._set_preset_temperature_attr(preset_mode, temperature)
             self.async_write_ha_state()
