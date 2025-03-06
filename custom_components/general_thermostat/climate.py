@@ -64,9 +64,10 @@ from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType, VolDictType
 
 from .const import (
+    ATTR_AUTO_UPDATE_PRESET_MODES,
     ATTR_PRESET_TEMPERATURES,
     CONF_AC_MODE,
-    CONF_AUTO_UPDATE_PRESETS,
+    CONF_AUTO_UPDATE_PRESET_MODES,
     CONF_COLD_TOLERANCE,
     CONF_HEATER,
     CONF_HOT_TOLERANCE,
@@ -101,7 +102,7 @@ PLATFORM_SCHEMA_COMMON = vol.Schema(
         vol.Required(CONF_HEATER): cv.entity_id,
         vol.Required(CONF_SENSOR): cv.entity_id,
         vol.Optional(CONF_AC_MODE): cv.boolean,
-        vol.Optional(CONF_AUTO_UPDATE_PRESETS): vol.All(
+        vol.Optional(CONF_AUTO_UPDATE_PRESET_MODES): vol.All(
             cv.ensure_list_csv, [vol.In(CONF_PRESETS.keys())]
         ),
         vol.Optional(CONF_MAX_TEMP): vol.Coerce(float),
@@ -176,7 +177,7 @@ async def _async_setup_config(
     max_temp: float | None = config.get(CONF_MAX_TEMP)
     target_temp: float | None = config.get(CONF_TARGET_TEMP)
     ac_mode: bool | None = config.get(CONF_AC_MODE)
-    auto_update_presets: list[str] | None = config.get(CONF_AUTO_UPDATE_PRESETS)
+    auto_update_preset_modes: list[str] | None = config.get(CONF_AUTO_UPDATE_PRESET_MODES)
     min_cycle_duration: timedelta | None = config.get(CONF_MIN_DUR)
     cold_tolerance: float = config[CONF_COLD_TOLERANCE]
     hot_tolerance: float = config[CONF_HOT_TOLERANCE]
@@ -189,12 +190,12 @@ async def _async_setup_config(
     target_temperature_step: float | None = config.get(CONF_TEMP_STEP)
     unit = hass.config.units.temperature_unit
 
-    if auto_update_presets is not None:
-        if any(p not in presets.keys() for p in auto_update_presets):
+    if auto_update_preset_modes is not None:
+        if any(p not in presets.keys() for p in auto_update_preset_modes):
             _LOGGER.error(
-                "Preset(s) in auto_update_presets that are not valid preset(s) for this thermostat (there is no initial temperature defined for these preset(s)): %s",
-                ", ".join([p for p in auto_update_presets if p not in presets.keys()]))
-            auto_update_presets = [p for p in auto_update_presets if p in presets.keys()]
+                "Preset(s) in auto_update_preset_modes that are not valid preset(s) for this thermostat (there is no initial temperature defined for these preset(s)): %s",
+                ", ".join([p for p in auto_update_preset_modes if p not in presets.keys()]))
+            auto_update_preset_modes = [p for p in auto_update_preset_modes if p in presets.keys()]
 
     async_add_entities(
         [
@@ -207,7 +208,7 @@ async def _async_setup_config(
                 max_temp,
                 target_temp,
                 ac_mode,
-                auto_update_presets,
+                auto_update_preset_modes,
                 min_cycle_duration,
                 cold_tolerance,
                 hot_tolerance,
@@ -235,12 +236,14 @@ async def _async_setup_config(
     )
 
 CACHED_PROPERTIES_WITH_ATTR_ = {
-    "preset_temperatures",
+    ATTR_AUTO_UPDATE_PRESET_MODES,
+    ATTR_PRESET_TEMPERATURES,
 }
 
 class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_PROPERTIES_WITH_ATTR_):
     """Representation of a General Thermostat device."""
 
+    _attr_auto_update_preset_modes: list[str] | None
     _attr_preset_temperatures: list[float]
 
     _attr_should_poll = False
@@ -253,9 +256,18 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         data: dict[str, Any] = dict()
 
         if ClimateEntityFeature.PRESET_MODE in supported_features:
+            data[ATTR_AUTO_UPDATE_PRESET_MODES] = self.auto_update_preset_modes
             data[ATTR_PRESET_TEMPERATURES] = self.preset_temperatures
 
         return data
+
+    @cached_property
+    def auto_update_preset_modes(self) -> list[str] | None:
+        """Return a list of auto updated preset modes.
+
+        Requires ClimateEntityFeature.PRESET_MODE.
+        """
+        return self._attr_auto_update_preset_modes
 
     @cached_property
     def preset_temperatures(self) -> list[float] | None:
@@ -275,7 +287,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         max_temp: float | None,
         target_temp: float | None,
         ac_mode: bool | None,
-        auto_update_presets: list[str] | None,
+        auto_update_preset_modes: list[str] | None,
         min_cycle_duration: timedelta | None,
         cold_tolerance: float,
         hot_tolerance: float,
@@ -297,7 +309,6 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         )
         self.ac_mode = ac_mode
         self.min_cycle_duration = min_cycle_duration
-        self._auto_update_presets = auto_update_presets
         self._cold_tolerance = cold_tolerance
         self._hot_tolerance = hot_tolerance
         self._keep_alive = keep_alive
@@ -322,6 +333,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
             | ClimateEntityFeature.TURN_OFF
             | ClimateEntityFeature.TURN_ON
         )
+        self._attr_auto_update_preset_modes = auto_update_preset_modes
         if len(presets):
             self._attr_supported_features |= ClimateEntityFeature.PRESET_MODE
             self._attr_preset_modes = [PRESET_NONE, *presets.keys()]
@@ -513,18 +525,18 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
 
         preset_mode_to_update = self._attr_preset_mode
         if (not force_preset_update
-            and self._auto_update_presets is not None
-            and self._attr_preset_mode not in self._auto_update_presets
+            and self._attr_auto_update_preset_modes is not None
+            and self._attr_preset_mode not in self._attr_auto_update_preset_modes
         ):
             # In case of non-auto-update-presets, we always update the none preset (whether we jump in or out the preset, is not important)
             preset_mode_to_update = PRESET_NONE
-            presets_inv = {v: k for v, k in zip(self._attr_preset_temperatures, self._attr_preset_modes) if k != PRESET_NONE and k not in self._auto_update_presets}
+            presets_inv = {v: k for v, k in zip(self._attr_preset_temperatures, self._attr_preset_modes) if k != PRESET_NONE and k not in self._attr_auto_update_preset_modes}
             self._attr_preset_mode = presets_inv.get(temperature, PRESET_NONE)
         self._target_temp = temperature
         if (force_preset_update
-            or self._auto_update_presets is None
+            or self._attr_auto_update_preset_modes is None
             or preset_mode_to_update == PRESET_NONE
-            or preset_mode_to_update in self._auto_update_presets
+            or preset_mode_to_update in self._attr_auto_update_preset_modes
         ):
             self._set_attr_preset_temperatures(preset_mode_to_update, temperature)
         await self._async_control_heating(force=True)
