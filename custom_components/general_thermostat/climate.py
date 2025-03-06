@@ -509,14 +509,24 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         """Set new target temperature."""
         if (temperature := kwargs.get(ATTR_TEMPERATURE)) is None:
             return
-        self._target_temp = temperature
-        force_preset_update = kwargs.get('force_preset_update')
-        if (force_preset_update is not None and force_preset_update
-            or self._auto_update_presets is None
-            or self._attr_preset_mode == PRESET_NONE
-            or self._attr_preset_mode in self._auto_update_presets
+        force_preset_update = kwargs.get('force_preset_update', False)
+
+        preset_mode_to_update = self._attr_preset_mode
+        if (not force_preset_update
+            and self._auto_update_presets is not None
+            and self._attr_preset_mode not in self._auto_update_presets
         ):
-            self._set_attr_preset_temperatures(self._attr_preset_mode, self._target_temp)
+            # In case of non-auto-update-presets, we always update the none preset (whether we jump in or out the preset, is not important)
+            preset_mode_to_update = PRESET_NONE
+            presets_inv = {v: k for v, k in zip(self._attr_preset_temperatures, self._attr_preset_modes) if k != PRESET_NONE and k not in self._auto_update_presets}
+            self._attr_preset_mode = presets_inv.get(temperature, PRESET_NONE)
+        self._target_temp = temperature
+        if (force_preset_update
+            or self._auto_update_presets is None
+            or preset_mode_to_update == PRESET_NONE
+            or preset_mode_to_update in self._auto_update_presets
+        ):
+            self._set_attr_preset_temperatures(preset_mode_to_update, temperature)
         await self._async_control_heating(force=True)
         self.async_write_ha_state()
 
