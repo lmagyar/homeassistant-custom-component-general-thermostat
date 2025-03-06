@@ -436,7 +436,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         else:
             self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, _async_startup)
 
-    def _set_preset_temperature_attr(self, preset_mode: str, temperature: float) -> None:
+    def _set_attr_preset_temperatures(self, preset_mode: str, temperature: float) -> None:
         index = self._attr_preset_modes.index(preset_mode)
         if self._attr_preset_temperatures[index] != temperature:
             new_preset_temperatures = self._attr_preset_temperatures.copy()
@@ -516,7 +516,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
             or self._attr_preset_mode == PRESET_NONE
             or self._attr_preset_mode in self._auto_update_presets
         ):
-            self._set_preset_temperature_attr(self._attr_preset_mode, self._target_temp)
+            self._set_attr_preset_temperatures(self._attr_preset_mode, self._target_temp)
         await self._async_control_heating(force=True)
         self.async_write_ha_state()
 
@@ -718,5 +718,5 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         if preset_mode == self._attr_preset_mode:
             await self.async_set_temperature(temperature=temperature, force_preset_update=True)
         else:
-            self._set_preset_temperature_attr(preset_mode, temperature)
+            self._set_attr_preset_temperatures(preset_mode, temperature)
             self.async_write_ha_state()
