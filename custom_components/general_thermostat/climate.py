@@ -52,7 +52,7 @@ from homeassistant.exceptions import ConditionError, ServiceValidationError
 from homeassistant.helpers import condition, config_validation as cv, entity_platform
 from homeassistant.helpers.device import async_device_info_to_link_from_entity
 from homeassistant.helpers.entity_platform import (
-    # AddConfigEntryEntitiesCallback,
+    AddConfigEntryEntitiesCallback,
     AddEntitiesCallback,
 )
 from homeassistant.helpers.event import (
@@ -133,8 +133,7 @@ PLATFORM_SCHEMA = CLIMATE_PLATFORM_SCHEMA.extend(PLATFORM_SCHEMA_COMMON.schema)
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    # async_add_entities: AddConfigEntryEntitiesCallback,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Initialize config entry."""
     await _async_setup_config(
@@ -162,8 +161,7 @@ async def _async_setup_config(
     hass: HomeAssistant,
     config: Mapping[str, Any],
     unique_id: str | None,
-    # async_add_entities: AddEntitiesCallback | AddConfigEntryEntitiesCallback,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddEntitiesCallback | AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the general thermostat platform."""
 
