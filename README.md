@@ -114,6 +114,7 @@ template:
       state_class: measurement
       unit_of_measurement: '°C'
       device_class: temperature
+      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
 
     # Read-only sensor for home preset temperature
     - name: "Demo Living room home target temperature"
@@ -121,6 +122,7 @@ template:
       state_class: measurement
       unit_of_measurement: '°C'
       device_class: temperature
+      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
 
     # Read-only sensor for sleep preset temperature
     - name: "Demo Living room sleep target temperature"
@@ -128,6 +130,7 @@ template:
       state_class: measurement
       unit_of_measurement: '°C'
       device_class: temperature
+      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
 
     # Read-only sensor for eco preset temperature
     - name: "Demo Living room eco target temperature"
@@ -135,6 +138,7 @@ template:
       state_class: measurement
       unit_of_measurement: '°C'
       device_class: temperature
+      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
 
     # Read-only sensor for away preset temperature
     - name: "Demo Living room away target temperature"
@@ -142,6 +146,7 @@ template:
       state_class: measurement
       unit_of_measurement: '°C'
       device_class: temperature
+      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
 
   - number:
 
@@ -160,6 +165,7 @@ template:
           data:
             preset_mode: none
             temperature: '{{ value }}'
+      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
 
     # Number entity for home preset manipulation, even when the thermostat is not in home preset
     - name: "Demo Living room home target temperature"
@@ -176,6 +182,7 @@ template:
           data:
             preset_mode: home
             temperature: '{{ value }}'
+      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
 
     # Number entity for sleep preset manipulation, even when the thermostat is not in sleep preset
     - name: "Demo Living room sleep target temperature"
@@ -192,6 +199,7 @@ template:
           data:
             preset_mode: sleep
             temperature: '{{ value }}'
+      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
 
     # Number entity for eco preset manipulation, even when the thermostat is not in eco preset
     - name: "Demo Living room eco target temperature"
@@ -208,6 +216,7 @@ template:
           data:
             preset_mode: eco
             temperature: '{{ value }}'
+      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
 
     # Number entity for away preset manipulation, even when the thermostat is not in away preset
     - name: "Demo Living room away target temperature"
@@ -224,6 +233,7 @@ template:
           data:
             preset_mode: away
             temperature: '{{ value }}'
+      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
 ```
 
 ### Dashboard section
