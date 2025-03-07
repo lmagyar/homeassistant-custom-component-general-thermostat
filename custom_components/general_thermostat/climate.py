@@ -448,6 +448,11 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         else:
             self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, _async_startup)
 
+    def _set_attr_preset_mode_based_on_target_temp(self) -> None:
+        if self._attr_auto_update_preset_modes is not None:
+            presets_inv = {v: k for v, k in zip(self._attr_preset_temperatures, self._attr_preset_modes) if k != PRESET_NONE and k not in self._attr_auto_update_preset_modes}
+            self._attr_preset_mode = presets_inv.get(self._target_temp, PRESET_NONE)
+
     def _set_attr_preset_temperatures(self, preset_mode: str, temperature: float) -> None:
         index = self._attr_preset_modes.index(preset_mode)
         if self._attr_preset_temperatures[index] != temperature:
@@ -521,24 +526,17 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         """Set new target temperature."""
         if (temperature := kwargs.get(ATTR_TEMPERATURE)) is None:
             return
-        force_preset_update = kwargs.get('force_preset_update', False)
 
-        preset_mode_to_update = self._attr_preset_mode
-        if (not force_preset_update
-            and self._attr_auto_update_preset_modes is not None
+        self._target_temp = temperature
+        preset_mode_to_update_its_temperature = self._attr_preset_mode
+        if (self._attr_preset_mode == PRESET_NONE
+            or self._attr_auto_update_preset_modes is not None
             and self._attr_preset_mode not in self._attr_auto_update_preset_modes
         ):
-            # In case of non-auto-update-presets, we always update the none preset (whether we jump in or out the preset, is not important)
-            preset_mode_to_update = PRESET_NONE
-            presets_inv = {v: k for v, k in zip(self._attr_preset_temperatures, self._attr_preset_modes) if k != PRESET_NONE and k not in self._attr_auto_update_preset_modes}
-            self._attr_preset_mode = presets_inv.get(temperature, PRESET_NONE)
-        self._target_temp = temperature
-        if (force_preset_update
-            or self._attr_auto_update_preset_modes is None
-            or preset_mode_to_update == PRESET_NONE
-            or preset_mode_to_update in self._attr_auto_update_preset_modes
-        ):
-            self._set_attr_preset_temperatures(preset_mode_to_update, temperature)
+            # In case of none and any non-auto-update presets, we always update the none preset (whether we jump in or out the preset, is not important)
+            preset_mode_to_update_its_temperature = PRESET_NONE
+            self._set_attr_preset_mode_based_on_target_temp()
+        self._set_attr_preset_temperatures(preset_mode_to_update_its_temperature, temperature)
         await self._async_control_heating(force=True)
         self.async_write_ha_state()
 
@@ -713,7 +711,13 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
 
         self._attr_preset_mode = preset_mode
         self._target_temp = self._attr_preset_temperatures[self._attr_preset_modes.index(self._attr_preset_mode)]
-
+        if preset_mode == PRESET_NONE:
+            self._set_attr_preset_mode_based_on_target_temp()
+        else:
+            if (self._attr_auto_update_preset_modes is not None
+                and preset_mode not in self._attr_auto_update_preset_modes
+            ):
+                self._set_attr_preset_temperatures(PRESET_NONE, self._target_temp)
         await self._async_control_heating(force=True)
         self.async_write_ha_state()
 
@@ -737,8 +741,19 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
 
     async def async_set_preset_temperature(self, preset_mode: str, temperature: float) -> None:
         """Set new preset temperature."""
-        if preset_mode == self._attr_preset_mode:
-            await self.async_set_temperature(temperature=temperature, force_preset_update=True)
+        if (self._attr_preset_mode != PRESET_NONE
+            and (self._attr_auto_update_preset_modes is None
+                or self._attr_preset_mode in self._attr_auto_update_preset_modes)
+        ):
+            if preset_mode == self._attr_preset_mode:
+                await self.async_set_temperature(temperature=temperature)
+            else:
+                self._set_attr_preset_temperatures(preset_mode, temperature)
+                self.async_write_ha_state()
         else:
-            self._set_attr_preset_temperatures(preset_mode, temperature)
-            self.async_write_ha_state()
+            if preset_mode == PRESET_NONE:
+                await self.async_set_temperature(temperature=temperature)
+            else:
+                self._set_attr_preset_temperatures(preset_mode, temperature)
+                self._set_attr_preset_mode_based_on_target_temp()
+                self.async_write_ha_state()
