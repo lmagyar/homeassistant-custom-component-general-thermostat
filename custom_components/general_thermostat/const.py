@@ -7,6 +7,7 @@ from homeassistant.components.climate import (
     PRESET_ECO,
     PRESET_HOME,
     PRESET_SLEEP,
+    PRESET_BOOST,
 )
 from homeassistant.const import Platform
 
@@ -16,6 +17,8 @@ ATTR_PRESET_TEMPERATURES = "preset_temperatures"
 DOMAIN = "general_thermostat"
 
 PLATFORMS = [Platform.CLIMATE]
+
+PRESET_REDUCE = "reduce"
 
 CONF_AC_MODE = "ac_mode"
 CONF_AUTO_UPDATE_PRESET_MODES = "auto_update_preset_modes"
@@ -34,6 +37,8 @@ CONF_PRESETS = {
         PRESET_HOME,
         PRESET_SLEEP,
         PRESET_ACTIVITY,
+        PRESET_BOOST,
+        PRESET_REDUCE,
     )
 }
 CONF_SENSOR = "target_sensor"
