@@ -243,7 +243,7 @@ CACHED_PROPERTIES_WITH_ATTR_ = {
 class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_PROPERTIES_WITH_ATTR_):
     """Representation of a General Thermostat device."""
 
-    _attr_auto_update_preset_modes: list[str] | None
+    _attr_auto_update_preset_modes: list[str]
     _attr_preset_temperatures: list[float]
 
     _attr_should_poll = False
@@ -333,7 +333,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
             | ClimateEntityFeature.TURN_OFF
             | ClimateEntityFeature.TURN_ON
         )
-        self._attr_auto_update_preset_modes = auto_update_preset_modes
+        self._attr_auto_update_preset_modes = auto_update_preset_modes if auto_update_preset_modes is not None else list(presets.keys())
         if len(presets):
             self._attr_supported_features |= ClimateEntityFeature.PRESET_MODE
             self._attr_preset_modes = [PRESET_NONE, *presets.keys()]
@@ -449,9 +449,8 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
             self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, _async_startup)
 
     def _set_attr_preset_mode_based_on_target_temp(self) -> None:
-        if self._attr_auto_update_preset_modes is not None:
-            presets_inv = {v: k for v, k in zip(self._attr_preset_temperatures, self._attr_preset_modes) if k != PRESET_NONE and k not in self._attr_auto_update_preset_modes}
-            self._attr_preset_mode = presets_inv.get(self._target_temp, PRESET_NONE)
+        presets_inv = {v: k for v, k in zip(self._attr_preset_temperatures, self._attr_preset_modes) if k != PRESET_NONE and k not in self._attr_auto_update_preset_modes}
+        self._attr_preset_mode = presets_inv.get(self._target_temp, PRESET_NONE)
 
     def _set_attr_preset_temperatures(self, preset_mode: str, temperature: float) -> None:
         index = self._attr_preset_modes.index(preset_mode)
@@ -530,8 +529,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         self._target_temp = temperature
         preset_mode_to_update_its_temperature = self._attr_preset_mode
         if (self._attr_preset_mode == PRESET_NONE
-            or self._attr_auto_update_preset_modes is not None
-            and self._attr_preset_mode not in self._attr_auto_update_preset_modes
+            or self._attr_preset_mode not in self._attr_auto_update_preset_modes
         ):
             # In case of none and any non-auto-update presets, we always update the none preset (whether we jump in or out the preset, is not important)
             preset_mode_to_update_its_temperature = PRESET_NONE
@@ -713,11 +711,8 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         self._target_temp = self._attr_preset_temperatures[self._attr_preset_modes.index(self._attr_preset_mode)]
         if preset_mode == PRESET_NONE:
             self._set_attr_preset_mode_based_on_target_temp()
-        else:
-            if (self._attr_auto_update_preset_modes is not None
-                and preset_mode not in self._attr_auto_update_preset_modes
-            ):
-                self._set_attr_preset_temperatures(PRESET_NONE, self._target_temp)
+        elif preset_mode not in self._attr_auto_update_preset_modes:
+            self._set_attr_preset_temperatures(PRESET_NONE, self._target_temp)
         await self._async_control_heating(force=True)
         self.async_write_ha_state()
 
@@ -742,8 +737,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
     async def async_set_preset_temperature(self, preset_mode: str, temperature: float) -> None:
         """Set new preset temperature."""
         if (self._attr_preset_mode != PRESET_NONE
-            and (self._attr_auto_update_preset_modes is None
-                or self._attr_preset_mode in self._attr_auto_update_preset_modes)
+            and self._attr_preset_mode in self._attr_auto_update_preset_modes
         ):
             if preset_mode == self._attr_preset_mode:
                 await self.async_set_temperature(temperature=temperature)
