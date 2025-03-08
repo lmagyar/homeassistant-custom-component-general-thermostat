@@ -247,6 +247,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
     _attr_preset_temperatures: list[float]
 
     _attr_should_poll = False
+    _attr_translation_key = "general_thermostat"
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:

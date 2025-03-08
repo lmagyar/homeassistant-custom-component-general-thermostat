@@ -1,5 +1,23 @@
 {
+  "entity": {
+    "climate": {
+      "general_thermostat": {
+        "state_attributes": {
+          "preset_mode": {
+            "default": "mdi:circle-medium",
+            "state": {
+              "activity": "mdi:walk",
+              "reduce": "mdi:snowflake"
+            }
+          }
+        }
+      }
+    }
+  },
   "services": {
+    "set_preset_temperature": {
+      "service": "mdi:thermometer"
+    },
     "reload": {
       "service": "mdi:reload"
     }
