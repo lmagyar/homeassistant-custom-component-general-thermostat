@@ -242,7 +242,7 @@ template:
 ### Dashboard section
 
 ```
-type: vertical-stack
+type: grid
 cards:
   - type: entities
     entities:
