@@ -33,7 +33,9 @@
           "eco_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::eco%]",
           "home_temp": "[%key:common::state::home%]",
           "sleep_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::sleep%]",
-          "activity_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::activity%]"
+          "activity_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::activity%]",
+          "boost_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::boost%]",
+          "reduce_temp": "Reduce"
         }
       }
     }
@@ -68,12 +70,41 @@
           "eco_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::eco%]",
           "home_temp": "[%key:common::state::home%]",
           "sleep_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::sleep%]",
-          "activity_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::activity%]"
+          "activity_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::activity%]",
+          "boost_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::boost%]",
+          "reduce_temp": "Reduce"
+        }
+      }
+    }
+  },
+  "entity": {
+    "climate": {
+      "general_thermostat": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "reduce": "Reduce"
+            }
+          }
         }
       }
     }
   },
   "services": {
+    "set_preset_temperature": {
+      "name": "Set target temperature for a preset",
+      "description": "Sets the temperature setpoint for a preset.",
+      "fields": {
+        "preset_mode": {
+          "name": "Preset mode",
+          "description": "Preset mode."
+        },
+        "temperature": {
+          "name": "Target temperature",
+          "description": "The temperature setpoint."
+        }
+      }
+    },
     "reload": {
       "name": "[%key:common::action::reload%]",
       "description": "Reloads general thermostats from the YAML-configuration."

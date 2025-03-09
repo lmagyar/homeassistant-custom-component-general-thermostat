@@ -59,7 +59,6 @@ from homeassistant.helpers.event import (
     async_track_state_change_event,
     async_track_time_interval,
 )
-from homeassistant.helpers.reload import async_setup_reload_service
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType, VolDictType
 
@@ -78,7 +77,6 @@ from .const import (
     CONF_SENSOR,
     DEFAULT_TOLERANCE,
     DOMAIN,
-    PLATFORMS,
     SERVICE_SET_PRESET_TEMPERATURE,
 )
 
@@ -154,11 +152,10 @@ async def async_setup_platform(
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
     """Set up the general thermostat platform."""
-
-    await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
-    await _async_setup_config(
-        hass, config, config.get(CONF_UNIQUE_ID), async_add_entities
-    )
+    if config:
+        await _async_setup_config(
+            hass, config, config.get(CONF_UNIQUE_ID), async_add_entities
+        )
 
 
 async def _async_setup_config(

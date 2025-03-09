@@ -8,7 +8,9 @@
                     "comfort_temp": "Comfort",
                     "eco_temp": "Eco",
                     "home_temp": "Home",
-                    "sleep_temp": "Sleep"
+                    "sleep_temp": "Sleep",
+                    "boost_temp": "Boost",
+                    "reduce_temp": "Reduce"
                 },
                 "title": "Temperature presets"
             },
@@ -33,7 +35,7 @@
                     "target_sensor": "Temperature sensor that reflects the current temperature."
                 },
                 "description": "Create a climate entity that controls the temperature via a switch and sensor.",
-                "title": "Create generic thermostat"
+                "title": "Create general thermostat"
             }
         }
     },
@@ -66,17 +68,46 @@
                     "comfort_temp": "Comfort",
                     "eco_temp": "Eco",
                     "home_temp": "Home",
-                    "sleep_temp": "Sleep"
+                    "sleep_temp": "Sleep",
+                    "boost_temp": "Boost",
+                    "reduce_temp": "Reduce"
                 },
                 "title": "Temperature presets"
             }
         }
     },
+    "entity": {
+        "climate": {
+          "general_thermostat": {
+            "state_attributes": {
+              "preset_mode": {
+                "state": {
+                  "reduce": "Reduce"
+                }
+              }
+            }
+          }
+        }
+      },
     "services": {
+        "set_preset_temperature": {
+            "name": "Set target temperature for a preset",
+            "description": "Sets the temperature setpoint for a preset.",
+            "fields": {
+                "preset_mode": {
+                    "name": "Preset mode",
+                    "description": "Preset mode."
+                },
+                "temperature": {
+                    "name": "Target temperature",
+                    "description": "The temperature setpoint."
+                }
+            }
+        },
         "reload": {
-            "description": "Reloads generic thermostats from the YAML-configuration.",
+            "description": "Reloads general thermostats from the YAML-configuration.",
             "name": "Reload"
         }
     },
-    "title": "Generic thermostat"
+    "title": "General thermostat"
 }
