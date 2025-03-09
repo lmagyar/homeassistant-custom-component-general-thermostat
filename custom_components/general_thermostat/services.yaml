@@ -1,1 +1,25 @@
 reload:
+set_preset_temperature:
+  target:
+    entity:
+      domain: climate
+      supported_features:
+        - climate.ClimateEntityFeature.PRESET_MODE
+  fields:
+    preset_mode:
+      required: true
+      example: "away"
+      selector:
+        text:
+    temperature:
+      required: true
+      example: "22"
+      filter:
+        supported_features:
+          - climate.ClimateEntityFeature.TARGET_TEMPERATURE
+      selector:
+        number:
+          min: 0
+          max: 250
+          step: 0.1
+          mode: box

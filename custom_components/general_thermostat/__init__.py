@@ -2,11 +2,21 @@
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.device import (
-    async_remove_stale_devices_links_keep_entity_device,
-)
+from homeassistant.helpers.device import async_remove_stale_devices_links_keep_entity_device
+from homeassistant.helpers.discovery import async_load_platform
+from homeassistant.helpers.reload import async_setup_reload_service
+from homeassistant.helpers.typing import ConfigType
 
-from .const import CONF_HEATER, PLATFORMS
+from .const import CONF_HEATER, DOMAIN, PLATFORMS
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Set up the general_thermostat component."""
+
+    for platform in PLATFORMS:
+        # Without this, icons.json and strings.json won't be loaded!!!
+        hass.async_create_task(async_load_platform(hass, platform, DOMAIN, {}, config))
+    await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

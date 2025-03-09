@@ -1,5 +1,22 @@
 {
+  "entity": {
+    "climate": {
+      "general_thermostat": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "activity": "mdi:walk",
+              "reduce": "mdi:piggy-bank"
+            }
+          }
+        }
+      }
+    }
+  },
   "services": {
+    "set_preset_temperature": {
+      "service": "mdi:thermometer"
+    },
     "reload": {
       "service": "mdi:reload"
     }
