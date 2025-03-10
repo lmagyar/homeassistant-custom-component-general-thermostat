@@ -151,10 +151,9 @@ async def async_setup_platform(
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
     """Set up the general thermostat platform."""
-    if config:
-        await _async_setup_config(
-            hass, config, config.get(CONF_UNIQUE_ID), async_add_entities
-        )
+    await _async_setup_config(
+        hass, config, config.get(CONF_UNIQUE_ID), async_add_entities
+    )
 
 
 async def _async_setup_config(
