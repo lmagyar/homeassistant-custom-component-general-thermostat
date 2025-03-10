@@ -15,7 +15,7 @@ Changes:
   - This partially reverts breaking changes introduced in 2025.2 [Auto select thermostat preset when selecting temperature #134146](https://github.com/home-assistant/core/pull/134146) for auto_update_preset_modes
 
 - Add new presets: `boost` (this is part of the climate integration), `reduce` (this is completely new)
-- Add new icon for the `activity` and `reduce` presets
+- Add new icon for the `activity` and the new `reduce` presets (works on HA OS VM (when I tested), but doesn't work on any other installations, HA is unbelievably broken in it's each corner)
 
 - Bugfixes in the original generic_thermostat code:
   - After restart recalculate the switch state, because sensor temperature maybe changed as much during restart that it requires it (because a restart can be caused by a longer power outage also)
