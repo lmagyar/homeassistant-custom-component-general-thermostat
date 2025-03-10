@@ -15,7 +15,7 @@ Changes:
   - This partially reverts breaking changes introduced in 2025.2 [Auto select thermostat preset when selecting temperature #134146](https://github.com/home-assistant/core/pull/134146) for auto_update_preset_modes
 
 - Add new presets: `boost` (this is part of the climate integration), `reduce` (this is completely new)
-- Add new icon for the `activity` and the new `reduce` presets (works on HA OS VM (when I tested), but doesn't work on any other installations, HA is unbelievably broken in it's each corner)
+- Add new icon for the `activity` and the new `reduce` presets **Note:** You must add `unique_id` to the yaml config to make it work!
 
 - Bugfixes in the original generic_thermostat code:
   - After restart recalculate the switch state, because sensor temperature maybe changed as much during restart that it requires it (because a restart can be caused by a longer power outage also)
@@ -36,6 +36,7 @@ Changes:
 
 - Replace all `platform: generic_thermostat` with `platform: general_thermostat` in your .yaml files - Note the change from gener**IC** to gener**AL**
   - Remove: `target_temp: xx` lines
+  - Add: `unique_id: xxxx_xxxx` lines
   - Do not remove: `away_temp: xx` or any other currently used preset temps, these are required to enable these presets, but these values will be used only on the first ever startup, later the saved values will be used
   - Optionally set `auto_update_preset_modes:` to a shorter list than all specified preset modes
 - Restart Home Assistant
@@ -76,6 +77,7 @@ Full blown demo (with dummy temperature sensor and dummy thermostat switch):
 ```
 climate:
   - platform: general_thermostat
+    unique_id: demo_living_room_thermostat
     name: Demo Living room Thermostat
     heater: input_boolean.demo_living_room_thermostat_switch
     target_sensor: sensor.demo_living_room_temperature
@@ -86,10 +88,12 @@ climate:
     precision: 0.1
     cold_tolerance: 0.1
     hot_tolerance: 0.1
-    home_temp: 22
+    boost_temp: 25
+    home_temp: 23
     sleep_temp: 20
-    eco_temp: 16
-    away_temp: 10
+    reduce_temp: 10
+    eco_temp: 18
+    away_temp: 14
     auto_update_preset_modes: away, eco
 
 input_boolean:
@@ -104,7 +108,7 @@ template:
 
   - sensor:
 
-    # Just a dummy fake sensor for demonstration
+    # Just a dummy fake temperature sensor for demonstration
     - name: "Demo Living room temperature"
       state: 22
       state_class: measurement
@@ -114,6 +118,14 @@ template:
     # Read-only sensor for none preset temperature
     - name: "Demo Living room normal target temperature"
       state: '{{ state_attr("climate.demo_living_room_thermostat", "preset_temperatures")[state_attr("climate.demo_living_room_thermostat", "preset_modes").index("none")] }}'
+      state_class: measurement
+      unit_of_measurement: '°C'
+      device_class: temperature
+      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
+
+    # Read-only sensor for boost preset temperature
+    - name: "Demo Living room boost target temperature"
+      state: '{{ state_attr("climate.demo_living_room_thermostat", "preset_temperatures")[state_attr("climate.demo_living_room_thermostat", "preset_modes").index("boost")] }}'
       state_class: measurement
       unit_of_measurement: '°C'
       device_class: temperature
@@ -130,6 +142,14 @@ template:
     # Read-only sensor for sleep preset temperature
     - name: "Demo Living room sleep target temperature"
       state: '{{ state_attr("climate.demo_living_room_thermostat", "preset_temperatures")[state_attr("climate.demo_living_room_thermostat", "preset_modes").index("sleep")] }}'
+      state_class: measurement
+      unit_of_measurement: '°C'
+      device_class: temperature
+      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
+
+    # Read-only sensor for reduce preset temperature
+    - name: "Demo Living room reduce target temperature"
+      state: '{{ state_attr("climate.demo_living_room_thermostat", "preset_temperatures")[state_attr("climate.demo_living_room_thermostat", "preset_modes").index("reduce")] }}'
       state_class: measurement
       unit_of_measurement: '°C'
       device_class: temperature
@@ -170,6 +190,23 @@ template:
             temperature: '{{ value }}'
       availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
 
+    # Number entity for boost preset manipulation, even when the thermostat is not in boost preset
+    - name: "Demo Living room boost target temperature"
+      min: '{{ state_attr("climate.demo_living_room_thermostat", "min_temp") | float(default=10) }}'
+      max: '{{ state_attr("climate.demo_living_room_thermostat", "max_temp") | float(default=25) }}'
+      step: '{{ state_attr("climate.demo_living_room_thermostat", "target_temp_step") | float(default=0.5) }}'
+      unit_of_measurement: '°C'
+      icon: 'mdi:thermometer'
+      state: '{{ state_attr("climate.demo_living_room_thermostat", "preset_temperatures")[state_attr("climate.demo_living_room_thermostat", "preset_modes").index("boost")] }}'
+      set_value :
+        - action: general_thermostat.set_preset_temperature
+          target:
+            entity_id: climate.demo_living_room_thermostat
+          data:
+            preset_mode: boost
+            temperature: '{{ value }}'
+      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
+
     # Number entity for home preset manipulation, even when the thermostat is not in home preset
     - name: "Demo Living room home target temperature"
       min: '{{ state_attr("climate.demo_living_room_thermostat", "min_temp") | float(default=10) }}'
@@ -201,6 +238,23 @@ template:
             entity_id: climate.demo_living_room_thermostat
           data:
             preset_mode: sleep
+            temperature: '{{ value }}'
+      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
+
+    # Number entity for reduce preset manipulation, even when the thermostat is not in reduce preset
+    - name: "Demo Living room reduce target temperature"
+      min: '{{ state_attr("climate.demo_living_room_thermostat", "min_temp") | float(default=10) }}'
+      max: '{{ state_attr("climate.demo_living_room_thermostat", "max_temp") | float(default=25) }}'
+      step: '{{ state_attr("climate.demo_living_room_thermostat", "target_temp_step") | float(default=0.5) }}'
+      unit_of_measurement: '°C'
+      icon: 'mdi:thermometer'
+      state: '{{ state_attr("climate.demo_living_room_thermostat", "preset_temperatures")[state_attr("climate.demo_living_room_thermostat", "preset_modes").index("reduce")] }}'
+      set_value :
+        - action: general_thermostat.set_preset_temperature
+          target:
+            entity_id: climate.demo_living_room_thermostat
+          data:
+            preset_mode: reduce
             temperature: '{{ value }}'
       availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
 
@@ -254,16 +308,28 @@ cards:
     features:
       - style: icons
         type: climate-preset-modes
+        preset_modes:
+          - away
+          - eco
+          - none
+          - reduce
+          - sleep
+          - home
+          - boost
   - type: entities
     entities:
-      - entity: sensor.demo_living_room_normal_target_temperature
-      - entity: sensor.demo_living_room_home_target_temperature
-      - entity: sensor.demo_living_room_sleep_target_temperature
-      - entity: sensor.demo_living_room_eco_target_temperature
       - entity: sensor.demo_living_room_away_target_temperature
-      - entity: number.demo_living_room_normal_target_temperature
-      - entity: number.demo_living_room_home_target_temperature
-      - entity: number.demo_living_room_sleep_target_temperature
-      - entity: number.demo_living_room_eco_target_temperature
+      - entity: sensor.demo_living_room_eco_target_temperature
+      - entity: sensor.demo_living_room_normal_target_temperature
+      - entity: sensor.demo_living_room_reduce_target_temperature
+      - entity: sensor.demo_living_room_sleep_target_temperature
+      - entity: sensor.demo_living_room_home_target_temperature
+      - entity: sensor.demo_living_room_boost_target_temperature
       - entity: number.demo_living_room_away_target_temperature
+      - entity: number.demo_living_room_eco_target_temperature
+      - entity: number.demo_living_room_normal_target_temperature
+      - entity: number.demo_living_room_reduce_target_temperature
+      - entity: number.demo_living_room_sleep_target_temperature
+      - entity: number.demo_living_room_home_target_temperature
+      - entity: number.demo_living_room_boost_target_temperature
 ```
