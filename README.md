@@ -14,8 +14,9 @@ Changes:
   - Auto-updates the preset temperature when that particular preset is selected and is in the auto_update_preset_modes
   - This partially reverts breaking changes introduced in 2025.2 [Auto select thermostat preset when selecting temperature #134146](https://github.com/home-assistant/core/pull/134146) for auto_update_preset_modes
 
-- Add new presets: `boost` (this is part of the climate integration), `reduce` (this is completely new)
-- Add new icon for the `activity` and the new `reduce` presets **Note:** You must add `unique_id` to the yaml config to make it work!
+- New presets: `boost` (this is part of the climate integration), `reduce` (this is completely new)
+- New icon for the `activity` and the new `reduce` presets **Note:** You must add `unique_id` to the yaml config to make it work!
+- New config option `icon'
 
 - Bugfixes in the original generic_thermostat code:
   - After restart recalculate the switch state, because sensor temperature maybe changed as much during restart that it requires it (because a restart can be caused by a longer power outage also)
@@ -39,19 +40,24 @@ Changes:
   - Add: `unique_id: xxxx_xxxx` lines
   - Do not remove: `away_temp: xx` or any other currently used preset temps, these are required to enable these presets, but these values will be used only on the first ever startup, later the saved values will be used
   - Optionally set `auto_update_preset_modes:` to a shorter list than all specified preset modes
+  - Optionally set `icon:`
 - Restart Home Assistant
 
 **Note:** Each time you rename the thermostat entity, it will forget the settings, because they are stored in the state under the previous entity name. This is normal.
 
 ## Custom configuration variables
 
-### auto_update_preset_modes (comma separated list)
+### `auto_update_preset_modes` (comma separated list)
 
 List preset modes that's preset temperature should be automatically updated when that particular preset is selected.
 
+### `icon` (string)
+
+As for any normal entity...
+
 ## Custom services / actions
 
-### general_thermostat.set_preset_temperature
+### `general_thermostat.set_preset_temperature`
 
 ```
 action: general_thermostat.set_preset_temperature
@@ -79,6 +85,7 @@ climate:
   - platform: general_thermostat
     unique_id: demo_living_room_thermostat
     name: Demo Living room Thermostat
+    icon: mdi:sofa
     heater: input_boolean.demo_living_room_thermostat_switch
     target_sensor: sensor.demo_living_room_temperature
     ac_mode: false
