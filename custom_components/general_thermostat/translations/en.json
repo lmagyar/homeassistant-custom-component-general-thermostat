@@ -78,17 +78,17 @@
     },
     "entity": {
         "climate": {
-          "general_thermostat": {
-            "state_attributes": {
-              "preset_mode": {
-                "state": {
-                  "reduce": "Reduce"
+            "general_thermostat": {
+                "state_attributes": {
+                    "preset_mode": {
+                        "state": {
+                           "reduce": "Reduce"
+                        }
+                    }
                 }
-              }
             }
-          }
         }
-      },
+    },
     "services": {
         "set_preset_temperature": {
             "name": "Set target temperature for a preset",
