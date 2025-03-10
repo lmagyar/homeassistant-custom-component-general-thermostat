@@ -16,6 +16,7 @@ Changes:
 
 - Add new presets: `boost` (this is part of the climate integration), `reduce` (this is completely new)
 - Add new icon for the `activity` and the new `reduce` presets **Note:** You must add `unique_id` to the yaml config to make it work!
+- New config option `icon'
 
 - Bugfixes in the original generic_thermostat code:
   - After restart recalculate the switch state, because sensor temperature maybe changed as much during restart that it requires it (because a restart can be caused by a longer power outage also)
@@ -49,6 +50,9 @@ Changes:
 
 List preset modes that's preset temperature should be automatically updated when that particular preset is selected.
 
+### `icon` (string)
+
+As for any normal entity...
 ## Custom services / actions
 
 ### general_thermostat.set_preset_temperature
@@ -79,6 +83,7 @@ climate:
   - platform: general_thermostat
     unique_id: demo_living_room_thermostat
     name: Demo Living room Thermostat
+    icon: mdi:sofa
     heater: input_boolean.demo_living_room_thermostat_switch
     target_sensor: sensor.demo_living_room_temperature
     ac_mode: false

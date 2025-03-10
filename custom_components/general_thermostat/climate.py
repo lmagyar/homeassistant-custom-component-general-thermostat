@@ -26,6 +26,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_ENTITY_ID,
     ATTR_TEMPERATURE,
+    CONF_ICON,
     CONF_NAME,
     CONF_UNIQUE_ID,
     EVENT_HOMEASSISTANT_START,
@@ -122,6 +123,7 @@ PLATFORM_SCHEMA_COMMON = vol.Schema(
             vol.In([PRECISION_TENTHS, PRECISION_HALVES, PRECISION_WHOLE])
         ),
         vol.Optional(CONF_UNIQUE_ID): cv.string,
+        vol.Optional(CONF_ICON): cv.icon,
         **PRESETS_SCHEMA,
     }
 )
@@ -183,6 +185,7 @@ async def _async_setup_config(
     precision: float | None = config.get(CONF_PRECISION)
     target_temperature_step: float | None = config.get(CONF_TEMP_STEP)
     unit = hass.config.units.temperature_unit
+    icon: str | None = config.get(CONF_ICON)
 
     if auto_update_preset_modes is not None:
         if any(p not in presets.keys() for p in auto_update_preset_modes):
@@ -213,6 +216,7 @@ async def _async_setup_config(
                 target_temperature_step,
                 unit,
                 unique_id,
+                icon,
             )
         ]
     )
@@ -293,6 +297,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         target_temperature_step: float | None,
         unit: UnitOfTemperature,
         unique_id: str | None,
+        icon: str | None,
     ) -> None:
         """Initialize the thermostat."""
         self._attr_name = name
@@ -323,6 +328,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         self._target_temp = target_temp
         self._attr_temperature_unit = unit
         self._attr_unique_id = unique_id
+        self._attr_icon = icon
         self._attr_supported_features = (
             ClimateEntityFeature.TARGET_TEMPERATURE
             | ClimateEntityFeature.TURN_OFF
