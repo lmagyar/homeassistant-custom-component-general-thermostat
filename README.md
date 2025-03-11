@@ -62,7 +62,7 @@ As for any normal entity...
 ```
 action: general_thermostat.set_preset_temperature
 target:
-  entity_id: climate.living_room_thermostat
+  entity_id: climate.demo_living_room_thermostat
 data:
   preset_mode: away
   temperature: 17
