@@ -18,6 +18,7 @@ Changes:
 - New presets: `boost` (this is part of the climate integration), `reduce` (this is completely new)
 - New icon for the `activity` and the new `reduce` presets **Note:** You must add `unique_id` to the yaml config to make it work!
 - New config option `icon`
+- New `cold_tolerance` and `hot_tolerance` attributes
 
 - Bugfixes in the original generic_thermostat code:
   - After restart recalculate the switch state, because sensor temperature maybe changed as much during restart that it requires it (because a restart can be caused by a longer power outage also)
