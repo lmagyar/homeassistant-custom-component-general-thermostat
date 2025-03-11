@@ -6,6 +6,7 @@ This is a fork of the official Home Assistant [`generic_thermostat`](https://www
 Changes:
 - Preset temperatures can be changed
   - New service/action `general_thermostat.set_preset_temperature` added to change preset temperatures even when the thermostat is not in that specific preset
+  - New service/action `general_thermostat.reset_preset_temperature` added to reset preset temperatures back to the configured values
   - Remembers changed preset temperatures, even over restarts (stores them in state attribute `preset_temperatures`)
 
 - Preset temperatures can be automatically updated by changing the target temperature (eg. on the dial)
@@ -66,6 +67,16 @@ target:
 data:
   preset_mode: away
   temperature: 17
+```
+
+### `general_thermostat.reset_preset_temperature`
+
+```
+action: general_thermostat.reset_preset_temperature
+target:
+  entity_id: climate.demo_living_room_thermostat
+data:
+  preset_mode: away    # this is optional, when omitted, all presets are reseted
 ```
 
 ## Extras
