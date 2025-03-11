@@ -65,6 +65,8 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType, VolDictT
 
 from .const import (
     ATTR_AUTO_UPDATE_PRESET_MODES,
+    ATTR_COLD_TOLERANCE,
+    ATTR_HOT_TOLERANCE,
     ATTR_PRESET_TEMPERATURES,
     CONF_AC_MODE,
     CONF_AUTO_UPDATE_PRESET_MODES,
@@ -245,6 +247,8 @@ async def _async_setup_config(
 
 CACHED_PROPERTIES_WITH_ATTR_ = {
     ATTR_AUTO_UPDATE_PRESET_MODES,
+    ATTR_COLD_TOLERANCE,
+    ATTR_HOT_TOLERANCE,
     ATTR_PRESET_TEMPERATURES,
 }
 
@@ -252,6 +256,8 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
     """Representation of a General Thermostat device."""
 
     _attr_auto_update_preset_modes: list[str]
+    _attr_cold_tolerance: float
+    _attr_hot_tolerance: float
     _attr_preset_temperatures: list[float]
 
     _attr_should_poll = False
@@ -262,13 +268,26 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         """Return entity specific state attributes."""
         supported_features = self.supported_features
 
-        data: dict[str, Any] = dict()
+        data = {
+            ATTR_COLD_TOLERANCE: self.cold_tolerance,
+            ATTR_HOT_TOLERANCE: self.hot_tolerance,
+        }
 
         if ClimateEntityFeature.PRESET_MODE in supported_features:
             data[ATTR_AUTO_UPDATE_PRESET_MODES] = self.auto_update_preset_modes
             data[ATTR_PRESET_TEMPERATURES] = self.preset_temperatures
 
         return data
+
+    @cached_property
+    def cold_tolerance(self) -> float:
+        """Return cold tolerance."""
+        return self._attr_cold_tolerance
+
+    @cached_property
+    def hot_tolerance(self) -> float:
+        """Return hot tolerance."""
+        return self._attr_hot_tolerance
 
     @cached_property
     def auto_update_preset_modes(self) -> list[str] | None:
@@ -319,8 +338,8 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         )
         self.ac_mode = ac_mode
         self.min_cycle_duration = min_cycle_duration
-        self._cold_tolerance = cold_tolerance
-        self._hot_tolerance = hot_tolerance
+        self._attr_cold_tolerance = cold_tolerance
+        self._attr_hot_tolerance = hot_tolerance
         self._keep_alive = keep_alive
         self._hvac_mode = initial_hvac_mode
         self._temp_precision = precision
@@ -663,8 +682,8 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
                     return
 
             assert self._cur_temp is not None and self._target_temp is not None
-            too_cold = self._target_temp >= self._cur_temp + self._cold_tolerance
-            too_hot = self._cur_temp >= self._target_temp + self._hot_tolerance
+            too_cold = self._target_temp >= self._cur_temp + self._attr_cold_tolerance
+            too_hot = self._cur_temp >= self._target_temp + self._attr_hot_tolerance
             if self._is_device_active:
                 if (self.ac_mode and too_cold) or (not self.ac_mode and too_hot):
                     _LOGGER.debug("Turning off heater %s", self.heater_entity_id)

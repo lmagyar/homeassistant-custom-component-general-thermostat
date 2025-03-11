@@ -12,6 +12,8 @@ from homeassistant.components.climate import (
 from homeassistant.const import Platform
 
 ATTR_AUTO_UPDATE_PRESET_MODES = "auto_update_preset_modes"
+ATTR_COLD_TOLERANCE = "cold_tolerance"
+ATTR_HOT_TOLERANCE = "hot_tolerance"
 ATTR_PRESET_TEMPERATURES = "preset_temperatures"
 
 DOMAIN = "general_thermostat"
