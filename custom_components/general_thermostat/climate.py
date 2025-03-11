@@ -748,6 +748,9 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         else:
             if preset_mode == PRESET_NONE:
                 await self.async_set_temperature(temperature=temperature)
+            elif preset_mode == self._attr_preset_mode:
+                self._set_attr_preset_temperatures(preset_mode, temperature)
+                await self.async_set_temperature(temperature=temperature)
             else:
                 self._set_attr_preset_temperatures(preset_mode, temperature)
                 self._set_attr_preset_mode_based_on_target_temp()
