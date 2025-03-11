@@ -45,3 +45,4 @@ CONF_SENSOR = "target_sensor"
 DEFAULT_TOLERANCE = 0.3
 
 SERVICE_SET_PRESET_TEMPERATURE = "set_preset_temperature"
+SERVICE_RESET_PRESET_TEMPERATURE = "reset_preset_temperature"

@@ -79,6 +79,7 @@ from .const import (
     DEFAULT_TOLERANCE,
     DOMAIN,
     SERVICE_SET_PRESET_TEMPERATURE,
+    SERVICE_RESET_PRESET_TEMPERATURE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -233,6 +234,15 @@ async def _async_setup_config(
         [ClimateEntityFeature.PRESET_MODE],
     )
 
+    platform.async_register_entity_service(
+        SERVICE_RESET_PRESET_TEMPERATURE,
+        {
+            vol.Optional(ATTR_PRESET_MODE): cv.string,
+        },
+        "async_handle_reset_preset_temperature_service",
+        [ClimateEntityFeature.PRESET_MODE],
+    )
+
 CACHED_PROPERTIES_WITH_ATTR_ = {
     ATTR_AUTO_UPDATE_PRESET_MODES,
     ATTR_PRESET_TEMPERATURES,
@@ -342,6 +352,7 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         else:
             self._attr_preset_modes = [PRESET_NONE]
             self._attr_preset_temperatures = [target_temp]
+        self._presets = presets
 
     async def async_added_to_hass(self) -> None:
         """Run when entity about to be added."""
@@ -753,5 +764,24 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
                 await self.async_set_temperature(temperature=temperature)
             else:
                 self._set_attr_preset_temperatures(preset_mode, temperature)
+                self._set_attr_preset_mode_based_on_target_temp()
+                self.async_write_ha_state()
+
+    @final
+    async def async_handle_reset_preset_temperature_service(self, preset_mode: str | None = None) -> None:
+        """Validate and reset preset temperature."""
+        if preset_mode:
+            self._valid_mode_or_raise("preset", preset_mode, self._presets.keys())
+        await self.async_reset_preset_temperature(preset_mode)
+
+    async def async_reset_preset_temperature(self, preset_mode: str | None) -> None:
+        """Reset preset temperature."""
+        if preset_mode:
+            await self.async_set_preset_temperature(preset_mode, self._presets[preset_mode])
+        else:
+            self._attr_preset_temperatures = [self._attr_preset_temperatures[0], *self._presets.values()]
+            if self._attr_preset_mode != PRESET_NONE:
+                await self.async_set_temperature(temperature=self._presets[self._attr_preset_mode])
+            else:
                 self._set_attr_preset_mode_based_on_target_temp()
                 self.async_write_ha_state()

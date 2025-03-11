@@ -105,6 +105,16 @@
         }
       }
     },
+    "reset_preset_temperature": {
+      "name": "Reset target temperature for a preset to the configured value",
+      "description": "Resets the temperature setpoint for a preset to the configured value.",
+      "fields": {
+        "preset_mode": {
+          "name": "Preset mode",
+          "description": "Preset mode."
+        }
+      }
+    },
     "reload": {
       "name": "[%key:common::action::reload%]",
       "description": "Reloads general thermostats from the YAML-configuration."
