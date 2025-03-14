@@ -111,8 +111,8 @@ PLATFORM_SCHEMA_COMMON = vol.Schema(
         vol.Optional(CONF_MIN_DUR): cv.positive_time_period,
         vol.Optional(CONF_MIN_TEMP): vol.Coerce(float),
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
-        vol.Optional(CONF_COLD_TOLERANCE, default=DEFAULT_TOLERANCE): vol.Coerce(float),
-        vol.Optional(CONF_HOT_TOLERANCE, default=DEFAULT_TOLERANCE): vol.Coerce(float),
+        vol.Optional(CONF_COLD_TOLERANCE): vol.Coerce(float),
+        vol.Optional(CONF_HOT_TOLERANCE): vol.Coerce(float),
         vol.Optional(CONF_TARGET_TEMP): vol.Coerce(float),
         vol.Optional(CONF_KEEP_ALIVE): cv.positive_time_period,
         vol.Optional(CONF_INITIAL_HVAC_MODE): vol.In(
@@ -178,8 +178,8 @@ async def _async_setup_config(
     ac_mode: bool | None = config.get(CONF_AC_MODE)
     auto_update_preset_modes: list[str] | None = config.get(CONF_AUTO_UPDATE_PRESET_MODES)
     min_cycle_duration: timedelta | None = config.get(CONF_MIN_DUR)
-    cold_tolerance: float = config[CONF_COLD_TOLERANCE]
-    hot_tolerance: float = config[CONF_HOT_TOLERANCE]
+    cold_tolerance: float | None = config[CONF_COLD_TOLERANCE]
+    hot_tolerance: float | None = config[CONF_HOT_TOLERANCE]
     keep_alive: timedelta | None = config.get(CONF_KEEP_ALIVE)
     initial_hvac_mode: HVACMode | None = config.get(CONF_INITIAL_HVAC_MODE)
     presets: dict[str, float] = {
@@ -256,8 +256,8 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
     """Representation of a General Thermostat device."""
 
     _attr_auto_update_preset_modes: list[str]
-    _attr_cold_tolerance: float
-    _attr_hot_tolerance: float
+    _attr_cold_tolerance: float | None
+    _attr_hot_tolerance: float | None
     _attr_preset_temperatures: list[float]
 
     _attr_should_poll = False
@@ -317,8 +317,8 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         ac_mode: bool | None,
         auto_update_preset_modes: list[str] | None,
         min_cycle_duration: timedelta | None,
-        cold_tolerance: float,
-        hot_tolerance: float,
+        cold_tolerance: float | None,
+        hot_tolerance: float | None,
         keep_alive: timedelta | None,
         initial_hvac_mode: HVACMode | None,
         presets: dict[str, float],
@@ -338,8 +338,10 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         )
         self.ac_mode = ac_mode
         self.min_cycle_duration = min_cycle_duration
-        self._attr_cold_tolerance = cold_tolerance
-        self._attr_hot_tolerance = hot_tolerance
+        if cold_tolerance is not None:
+            self._attr_cold_tolerance = abs(cold_tolerance)
+        if hot_tolerance is not None:
+            self._attr_hot_tolerance = abs(hot_tolerance)
         self._keep_alive = keep_alive
         self._attr_hvac_mode = initial_hvac_mode
         if precision is not None:
@@ -406,6 +408,14 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
                 and (old_attr := old_state.attributes.get(ATTR_TEMPERATURE)) is not None
             ):
                 self._attr_target_temperature = float(old_attr)
+            if (self._attr_cold_tolerance is None
+                and (old_attr := old_state.attributes.get(ATTR_COLD_TOLERANCE)) is not None
+            ):
+                self._attr_cold_tolerance = abs(float(old_attr))
+            if (self._attr_hot_tolerance is None
+                and (old_attr := old_state.attributes.get(ATTR_HOT_TOLERANCE)) is not None
+            ):
+                self._attr_hot_tolerance = abs(float(old_attr))
             if (
                 self.preset_modes
                 and old_state.attributes.get(ATTR_PRESET_MODE) in self.preset_modes
@@ -429,6 +439,16 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
                 self._attr_target_temperature = self.min_temp
             _LOGGER.warning(
                 "No previously saved target temperature, setting to %s", self._attr_target_temperature
+            )
+        if self._attr_cold_tolerance is None:
+            self._attr_cold_tolerance = DEFAULT_TOLERANCE
+            _LOGGER.warning(
+                "No previously saved cold tolerance, setting to %f", self._attr_cold_tolerance
+            )
+        if self._attr_hot_tolerance is None:
+            self._attr_hot_tolerance = DEFAULT_TOLERANCE
+            _LOGGER.warning(
+                "No previously saved hot tolerance, setting to %f", self._attr_hot_tolerance
             )
 
         new_preset_temperatures[self._attr_preset_modes.index(self._attr_preset_mode)] = self._attr_target_temperature
