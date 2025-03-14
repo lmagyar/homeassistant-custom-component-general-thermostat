@@ -15,10 +15,14 @@ Changes:
   - Auto-updates the preset temperature when that particular preset is selected and is in the auto_update_preset_modes
   - This partially reverts breaking changes introduced in 2025.2 [Auto select thermostat preset when selecting temperature #134146](https://github.com/home-assistant/core/pull/134146) for auto_update_preset_modes
 
+- Cold and hot tolerance can be changed
+  - New `cold_tolerance` and `hot_tolerance` attributes
+  - Restored from previous state if no config option is specified
+  - New service/action `general_thermostat.set_tolerance` added to change cold/hot tolerance
+
 - New presets: `boost` (this is part of the climate integration), `reduce` (this is completely new)
 - New icon for the `activity` and the new `reduce` presets **Note:** You must add `unique_id` to the yaml config to make it work!
 - New config option `icon`
-- New `cold_tolerance` and `hot_tolerance` attributes
 
 - Bugfixes in the original generic_thermostat code:
   - After restart recalculate the switch state, because sensor temperature maybe changed as much during restart that it requires it (because a restart can be caused by a longer power outage also)
@@ -39,6 +43,7 @@ Changes:
 
 - Replace all `platform: generic_thermostat` with `platform: general_thermostat` in your .yaml files - Note the change from gener**IC** to gener**AL**
   - Remove: `target_temp: xx` lines (otherwise the configured value will be used, not the previous state)
+  - Remove: `cold_tolerance: xx` and `hot_tolerance: xx` lines (otherwise the configured value will be used, not the previous state)
   - Add: `unique_id: xxxx_xxxx` lines
   - Do not remove: `away_temp: xx` or any other currently used preset temps, these are required to enable these presets, but these values will be used only on the first ever startup, later the saved values will be used
   - Optionally set `auto_update_preset_modes:` to a shorter list than all specified preset modes
@@ -78,6 +83,17 @@ target:
   entity_id: climate.demo_living_room_thermostat
 data:
   preset_mode: away    # this is optional, when omitted, all presets are reseted
+```
+
+### `general_thermostat.set_tolerance`
+
+```
+action: general_thermostat.set_tolerance
+target:
+  entity_id: climate.demo_living_room_thermostat
+data:
+  cold_tolerance: 0.1    # this is optional
+  hot_tolerance: 0.1    # this is optional
 ```
 
 ## Extras
@@ -309,6 +325,38 @@ template:
           data:
             preset_mode: away
             temperature: '{{ value }}'
+      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
+
+    # Number entity for cold_tolerance
+    - name: "Demo Living room cold tolerance"
+      min: 0
+      max: 99
+      step: 0.1
+      unit_of_measurement: '°C'
+      icon: 'mdi:arrow-collapse-down'
+      state: '{{ state_attr("climate.demo_living_room_thermostat", "cold_tolerance") }}'
+      set_value :
+        - action: general_thermostat.set_tolerance
+          target:
+            entity_id: climate.demo_living_room_thermostat
+          data:
+            cold_tolerance: '{{ value }}'
+      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
+
+    # Number entity for hot_tolerance
+    - name: "Demo Living room hot tolerance"
+      min: 0
+      max: 99
+      step: 0.1
+      unit_of_measurement: '°C'
+      icon: 'mdi:arrow-collapse-up'
+      state: '{{ state_attr("climate.demo_living_room_thermostat", "hot_tolerance") }}'
+      set_value :
+        - action: general_thermostat.set_tolerance
+          target:
+            entity_id: climate.demo_living_room_thermostat
+          data:
+            hot_tolerance: '{{ value }}'
       availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
 ```
 
