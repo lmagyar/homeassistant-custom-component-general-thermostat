@@ -233,7 +233,7 @@ async def _async_setup_config(
             vol.Required(ATTR_TEMPERATURE): vol.Coerce(float),
         },
         "async_handle_set_preset_temperature_service",
-        [ClimateEntityFeature.PRESET_MODE],
+        [ClimateEntityFeature.PRESET_MODE, ClimateEntityFeature.TARGET_TEMPERATURE],
     )
 
     platform.async_register_entity_service(
@@ -242,7 +242,7 @@ async def _async_setup_config(
             vol.Optional(ATTR_PRESET_MODE): cv.string,
         },
         "async_handle_reset_preset_temperature_service",
-        [ClimateEntityFeature.PRESET_MODE],
+        [ClimateEntityFeature.PRESET_MODE, ClimateEntityFeature.TARGET_TEMPERATURE],
     )
 
 CACHED_PROPERTIES_WITH_ATTR_ = {
@@ -402,20 +402,10 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
 
         # Check If we have an old state
         if (old_state := await self.async_get_last_state()) is not None:
-            # If we have no initial temperature, restore
-            if self._attr_target_temperature is None:
-                # If we have a previously saved temperature
-                if old_state.attributes.get(ATTR_TEMPERATURE) is None:
-                    if self.ac_mode:
-                        self._attr_target_temperature = self.max_temp
-                    else:
-                        self._attr_target_temperature = self.min_temp
-                    _LOGGER.warning(
-                        "Undefined target temperature, falling back to %s",
-                        self._attr_target_temperature,
-                    )
-                else:
-                    self._attr_target_temperature = float(old_state.attributes[ATTR_TEMPERATURE])
+            if (self._attr_target_temperature is None
+                and (old_attr := old_state.attributes.get(ATTR_TEMPERATURE)) is not None
+            ):
+                self._attr_target_temperature = float(old_attr)
             if (
                 self.preset_modes
                 and old_state.attributes.get(ATTR_PRESET_MODE) in self.preset_modes
@@ -431,15 +421,14 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
             if not self._attr_hvac_mode and old_state.state:
                 self._attr_hvac_mode = HVACMode(old_state.state)
 
-        else:
-            # No previous state, try and restore defaults
-            if self._attr_target_temperature is None:
-                if self.ac_mode:
-                    self._attr_target_temperature = self.max_temp
-                else:
-                    self._attr_target_temperature = self.min_temp
+        # No previous state, try and restore defaults
+        if self._attr_target_temperature is None:
+            if self.ac_mode:
+                self._attr_target_temperature = self.max_temp
+            else:
+                self._attr_target_temperature = self.min_temp
             _LOGGER.warning(
-                "No previously saved temperature, setting to %s", self._attr_target_temperature
+                "No previously saved target temperature, setting to %s", self._attr_target_temperature
             )
 
         new_preset_temperatures[self._attr_preset_modes.index(self._attr_preset_mode)] = self._attr_target_temperature
@@ -649,15 +638,16 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
                         self.heater_entity_id,
                     )
                     await self._async_heater_turn_on()
-            elif (self.ac_mode and too_hot) or (not self.ac_mode and too_cold):
-                _LOGGER.debug("Turning on heater %s", self.heater_entity_id)
-                await self._async_heater_turn_on()
-            elif time is not None:
-                # The time argument is passed only in keep-alive case
-                _LOGGER.debug(
-                    "Keep-alive - Turning off heater %s", self.heater_entity_id
-                )
-                await self._async_heater_turn_off()
+            else:
+                if (self.ac_mode and too_hot) or (not self.ac_mode and too_cold):
+                    _LOGGER.debug("Turning on heater %s", self.heater_entity_id)
+                    await self._async_heater_turn_on()
+                elif time is not None:
+                    # The time argument is passed only in keep-alive case
+                    _LOGGER.debug(
+                        "Keep-alive - Turning off heater %s", self.heater_entity_id
+                    )
+                    await self._async_heater_turn_off()
 
     @property
     def _is_device_active(self) -> bool | None:

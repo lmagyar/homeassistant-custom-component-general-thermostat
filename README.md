@@ -38,7 +38,7 @@ Changes:
 ## How to use
 
 - Replace all `platform: generic_thermostat` with `platform: general_thermostat` in your .yaml files - Note the change from gener**IC** to gener**AL**
-  - Remove: `target_temp: xx` lines
+  - Remove: `target_temp: xx` lines (otherwise the configured value will be used, not the previous state)
   - Add: `unique_id: xxxx_xxxx` lines
   - Do not remove: `away_temp: xx` or any other currently used preset temps, these are required to enable these presets, but these values will be used only on the first ever startup, later the saved values will be used
   - Optionally set `auto_update_preset_modes:` to a shorter list than all specified preset modes

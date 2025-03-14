@@ -5,6 +5,7 @@ set_preset_temperature:
       domain: climate
       supported_features:
         - climate.ClimateEntityFeature.PRESET_MODE
+        - climate.ClimateEntityFeature.TARGET_TEMPERATURE
   fields:
     preset_mode:
       required: true
@@ -14,9 +15,6 @@ set_preset_temperature:
     temperature:
       required: true
       example: "22"
-      filter:
-        supported_features:
-          - climate.ClimateEntityFeature.TARGET_TEMPERATURE
       selector:
         number:
           min: 0
@@ -29,6 +27,7 @@ reset_preset_temperature:
       domain: climate
       supported_features:
         - climate.ClimateEntityFeature.PRESET_MODE
+        - climate.ClimateEntityFeature.TARGET_TEMPERATURE
   fields:
     preset_mode:
       required: false
