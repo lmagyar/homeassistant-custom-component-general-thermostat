@@ -114,6 +114,10 @@
                 }
             }
         },
+        "set_tolerance": {
+            "name": "Set cold and hot tolerance",
+            "description": "Sets the temperature tolerances."
+        },
         "reload": {
             "description": "Reloads general thermostats from the YAML-configuration.",
             "name": "Reload"

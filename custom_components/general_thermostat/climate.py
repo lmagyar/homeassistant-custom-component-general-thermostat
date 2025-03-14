@@ -82,6 +82,7 @@ from .const import (
     DOMAIN,
     SERVICE_SET_PRESET_TEMPERATURE,
     SERVICE_RESET_PRESET_TEMPERATURE,
+    SERVICE_SET_TOLERANCE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -244,6 +245,17 @@ async def _async_setup_config(
         "async_handle_reset_preset_temperature_service",
         [ClimateEntityFeature.PRESET_MODE, ClimateEntityFeature.TARGET_TEMPERATURE],
     )
+
+    platform.async_register_entity_service(
+        SERVICE_SET_TOLERANCE,
+        {
+            vol.Optional(ATTR_COLD_TOLERANCE): vol.Coerce(float),
+            vol.Optional(ATTR_HOT_TOLERANCE): vol.Coerce(float),
+        },
+        "async_handle_set_tolerance_service",
+        [ClimateEntityFeature.TARGET_TEMPERATURE],
+    )
+
 
 CACHED_PROPERTIES_WITH_ATTR_ = {
     ATTR_AUTO_UPDATE_PRESET_MODES,
@@ -768,3 +780,20 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
             else:
                 self._set_attr_preset_mode_based_on_target_temp()
                 self.async_write_ha_state()
+
+    @final
+    async def async_handle_set_tolerance_service(self, cold_tolerance: float | None = None, hot_tolerance: float | None = None) -> None:
+        """Set cold and hot tolerance."""
+        await self.async_set_tolerance(cold_tolerance, hot_tolerance)
+
+    async def async_set_tolerance(self, cold_tolerance: float | None = None, hot_tolerance: float | None = None) -> None:
+        """Set cold and hot tolerance."""
+        if cold_tolerance is not None:
+            self._attr_cold_tolerance = abs(cold_tolerance)
+        if hot_tolerance is not None:
+            self._attr_hot_tolerance = abs(hot_tolerance)
+        if (cold_tolerance is not None
+            or hot_tolerance is not None
+        ):
+            await self._async_control_heating(force=True)
+            self.async_write_ha_state()
