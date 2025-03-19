@@ -18,7 +18,7 @@ ATTR_PRESET_TEMPERATURES = "preset_temperatures"
 
 DOMAIN = "general_thermostat"
 
-PLATFORMS = [Platform.CLIMATE]
+PLATFORMS = [Platform.CLIMATE, Platform.NUMBER]
 
 PRESET_REDUCE = "reduce"
 

@@ -85,6 +85,8 @@ from .const import (
     SERVICE_SET_TOLERANCE,
 )
 
+from .number import GeneralThermostatNumber
+
 _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_NAME = "General Thermostat"
@@ -162,6 +164,17 @@ async def async_setup_platform(
     )
 
 
+# from homeassistant.helpers.entity_platform import async_get_platforms
+
+# def get_platform(hass, name):
+#     platform_list = async_get_platforms(hass, name)
+
+#     for platform in platform_list:
+#         if platform.domain == name:
+#             return platform
+
+#     return None
+
 async def _async_setup_config(
     hass: HomeAssistant,
     config: Mapping[str, Any],
@@ -202,7 +215,9 @@ async def _async_setup_config(
         [
             GeneralThermostat(
                 hass,
+                unique_id,
                 name,
+                icon,
                 heater_entity_id,
                 sensor_entity_id,
                 min_temp,
@@ -219,9 +234,38 @@ async def _async_setup_config(
                 precision,
                 target_temperature_step,
                 unit,
-                unique_id,
-                icon,
+            ),
+    #     ]
+    # )
+
+    # get_platform(hass, "number").async_add_entities(
+    #     [
+
+            GeneralThermostatNumber(
+                hass,
+                unique_id + "_away" if unique_id is not None else None,
+                name + " away preset temperature",
+                "mdi:thermometer",
+
+                "°C",
+
+                "climate.demo_living_room_thermostat",
+                "preset_temperatures", "preset_modes", "away",
+                "set_preset_temperature", {"preset_mode": "away"}, "temperature",
             )
+
+
+            # GeneralThermostatNumber(
+            #     hass,
+            #     unique_id + "_away" if unique_id is not None else None,
+            #     name + "away preset temperature",
+            #     "mdi:arrow-collapse-down",
+
+            #     "climate.demo_living_room_thermostat",
+            #     "cold_tolerance",
+            #     "general_thermostat.set_tolerance",
+            #     "cold_tolerance",
+            # )
         ]
     )
 
@@ -320,7 +364,10 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
     def __init__(
         self,
         hass: HomeAssistant,
+        unique_id: str | None,
         name: str,
+        icon: str | None,
+
         heater_entity_id: str,
         sensor_entity_id: str,
         min_temp: float | None,
@@ -337,11 +384,12 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         precision: float | None,
         target_temperature_step: float | None,
         unit: UnitOfTemperature,
-        unique_id: str | None,
-        icon: str | None,
     ) -> None:
         """Initialize the thermostat."""
+        self._attr_unique_id = unique_id
         self._attr_name = name
+        self._attr_icon = icon
+
         self.heater_entity_id = heater_entity_id
         self.sensor_entity_id = sensor_entity_id
         self._attr_device_info = async_device_info_to_link_from_entity(
@@ -372,8 +420,6 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         self._attr_preset_mode = PRESET_NONE
         self._attr_target_temperature = target_temp
         self._attr_temperature_unit = unit
-        self._attr_unique_id = unique_id
-        self._attr_icon = icon
         self._attr_supported_features = (
             ClimateEntityFeature.TARGET_TEMPERATURE
             | ClimateEntityFeature.TURN_OFF
