@@ -179,8 +179,8 @@ async def _async_setup_config(
     ac_mode: bool | None = config.get(CONF_AC_MODE)
     auto_update_preset_modes: list[str] | None = config.get(CONF_AUTO_UPDATE_PRESET_MODES)
     min_cycle_duration: timedelta | None = config.get(CONF_MIN_DUR)
-    cold_tolerance: float | None = config[CONF_COLD_TOLERANCE]
-    hot_tolerance: float | None = config[CONF_HOT_TOLERANCE]
+    cold_tolerance: float | None = config.get(CONF_COLD_TOLERANCE)
+    hot_tolerance: float | None = config.get(CONF_HOT_TOLERANCE)
     keep_alive: timedelta | None = config.get(CONF_KEEP_ALIVE)
     initial_hvac_mode: HVACMode | None = config.get(CONF_INITIAL_HVAC_MODE)
     presets: dict[str, float] = {
@@ -294,12 +294,12 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
     @cached_property
     def cold_tolerance(self) -> float:
         """Return cold tolerance."""
-        return self._attr_cold_tolerance
+        return self._attr_cold_tolerance or DEFAULT_TOLERANCE
 
     @cached_property
     def hot_tolerance(self) -> float:
         """Return hot tolerance."""
-        return self._attr_hot_tolerance
+        return self._attr_hot_tolerance or DEFAULT_TOLERANCE
 
     @cached_property
     def auto_update_preset_modes(self) -> list[str] | None:
@@ -350,10 +350,8 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
         )
         self.ac_mode = ac_mode
         self.min_cycle_duration = min_cycle_duration
-        if cold_tolerance is not None:
-            self._attr_cold_tolerance = abs(cold_tolerance)
-        if hot_tolerance is not None:
-            self._attr_hot_tolerance = abs(hot_tolerance)
+        self._attr_cold_tolerance = abs(cold_tolerance) if cold_tolerance is not None else None
+        self._attr_hot_tolerance = abs(hot_tolerance) if hot_tolerance is not None else None
         self._keep_alive = keep_alive
         self._attr_hvac_mode = initial_hvac_mode
         if precision is not None:
