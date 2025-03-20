@@ -17,6 +17,12 @@
     "set_preset_temperature": {
       "service": "mdi:thermometer"
     },
+    "reset_preset_temperature": {
+      "service": "mdi:refresh"
+    },
+    "set_tolerance": {
+      "service": "mdi:arrow-expand-vertical"
+    },
     "reload": {
       "service": "mdi:reload"
     }

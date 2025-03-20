@@ -105,6 +105,30 @@
         }
       }
     },
+    "reset_preset_temperature": {
+      "name": "Reset target temperature for a preset to the configured value",
+      "description": "Resets the temperature setpoint for a preset to the configured value.",
+      "fields": {
+        "preset_mode": {
+          "name": "Preset mode",
+          "description": "Preset mode."
+        }
+      }
+    },
+    "set_tolerance": {
+      "name": "Set cold and hot tolerance",
+      "description": "Sets the temperature tolerances.",
+      "fields": {
+        "cold_tolerance": {
+          "name": "[%key:component::general_thermostat::config::step::user::data::cold_tolerance%]",
+          "description": "[%key:component::general_thermostat::config::step::user::data_description::cold_tolerance%]"
+        },
+        "hot_tolerance": {
+          "name": "[%key:component::general_thermostat::config::step::user::data::hot_tolerance%]",
+          "description": "[%key:component::general_thermostat::config::step::user::data_description::hot_tolerance%]"
+        }
+      }
+    },
     "reload": {
       "name": "[%key:common::action::reload%]",
       "description": "Reloads general thermostats from the YAML-configuration."
