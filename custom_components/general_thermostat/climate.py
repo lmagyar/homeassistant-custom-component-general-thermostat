@@ -294,12 +294,12 @@ class GeneralThermostat(ClimateEntity, RestoreEntity, cached_properties=CACHED_P
     @cached_property
     def cold_tolerance(self) -> float:
         """Return cold tolerance."""
-        return self._attr_cold_tolerance or DEFAULT_TOLERANCE
+        return self._attr_cold_tolerance if self._attr_cold_tolerance is not None else DEFAULT_TOLERANCE
 
     @cached_property
     def hot_tolerance(self) -> float:
         """Return hot tolerance."""
-        return self._attr_hot_tolerance or DEFAULT_TOLERANCE
+        return self._attr_hot_tolerance if self._attr_hot_tolerance is not None else DEFAULT_TOLERANCE
 
     @cached_property
     def auto_update_preset_modes(self) -> list[str] | None:
