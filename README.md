@@ -112,7 +112,7 @@ Full blown demo (with dummy temperature sensor and dummy thermostat switch):
 climate:
   - platform: general_thermostat
     unique_id: demo_living_room_thermostat
-    name: Demo Living room Thermostat
+    name: Demo Living room thermostat
     icon: mdi:sofa
     heater: input_boolean.demo_living_room_thermostat_switch
     target_sensor: sensor.demo_living_room_temperature
@@ -133,7 +133,7 @@ input_boolean:
 
   # Just a dummy fake switch for demonstration
   demo_living_room_thermostat_switch:
-    name: Demo Living room Thermostat switch
+    name: Demo Living room thermostat switch
     icon: mdi:sofa
     initial: false
 
@@ -156,7 +156,7 @@ template:
       max: '{{ state_attr("climate.demo_living_room_thermostat", "max_temp") | float(default=25) }}'
       step: '{{ state_attr("climate.demo_living_room_thermostat", "target_temp_step") | float(default=0.5) }}'
       unit_of_measurement: '°C'
-      icon: 'mdi:thermometer'
+      icon: 'mdi:circle-medium'
       state: '{{ state_attr("climate.demo_living_room_thermostat", "preset_temperatures")[state_attr("climate.demo_living_room_thermostat", "preset_modes").index("none")] }}'
       set_value :
         - action: general_thermostat.set_preset_temperature
@@ -173,7 +173,7 @@ template:
       max: '{{ state_attr("climate.demo_living_room_thermostat", "max_temp") | float(default=25) }}'
       step: '{{ state_attr("climate.demo_living_room_thermostat", "target_temp_step") | float(default=0.5) }}'
       unit_of_measurement: '°C'
-      icon: 'mdi:thermometer'
+      icon: 'mdi:rocket-launch'
       state: '{{ state_attr("climate.demo_living_room_thermostat", "preset_temperatures")[state_attr("climate.demo_living_room_thermostat", "preset_modes").index("boost")] }}'
       set_value :
         - action: general_thermostat.set_preset_temperature
@@ -190,7 +190,7 @@ template:
       max: '{{ state_attr("climate.demo_living_room_thermostat", "max_temp") | float(default=25) }}'
       step: '{{ state_attr("climate.demo_living_room_thermostat", "target_temp_step") | float(default=0.5) }}'
       unit_of_measurement: '°C'
-      icon: 'mdi:thermometer'
+      icon: 'mdi:home'
       state: '{{ state_attr("climate.demo_living_room_thermostat", "preset_temperatures")[state_attr("climate.demo_living_room_thermostat", "preset_modes").index("home")] }}'
       set_value :
         - action: general_thermostat.set_preset_temperature
@@ -207,7 +207,7 @@ template:
       max: '{{ state_attr("climate.demo_living_room_thermostat", "max_temp") | float(default=25) }}'
       step: '{{ state_attr("climate.demo_living_room_thermostat", "target_temp_step") | float(default=0.5) }}'
       unit_of_measurement: '°C'
-      icon: 'mdi:thermometer'
+      icon: 'mdi:bed'
       state: '{{ state_attr("climate.demo_living_room_thermostat", "preset_temperatures")[state_attr("climate.demo_living_room_thermostat", "preset_modes").index("sleep")] }}'
       set_value :
         - action: general_thermostat.set_preset_temperature
@@ -224,7 +224,7 @@ template:
       max: '{{ state_attr("climate.demo_living_room_thermostat", "max_temp") | float(default=25) }}'
       step: '{{ state_attr("climate.demo_living_room_thermostat", "target_temp_step") | float(default=0.5) }}'
       unit_of_measurement: '°C'
-      icon: 'mdi:thermometer'
+      icon: 'mdi:piggy-bank'
       state: '{{ state_attr("climate.demo_living_room_thermostat", "preset_temperatures")[state_attr("climate.demo_living_room_thermostat", "preset_modes").index("reduce")] }}'
       set_value :
         - action: general_thermostat.set_preset_temperature
@@ -241,7 +241,7 @@ template:
       max: '{{ state_attr("climate.demo_living_room_thermostat", "max_temp") | float(default=25) }}'
       step: '{{ state_attr("climate.demo_living_room_thermostat", "target_temp_step") | float(default=0.5) }}'
       unit_of_measurement: '°C'
-      icon: 'mdi:thermometer'
+      icon: 'mdi:leaf'
       state: '{{ state_attr("climate.demo_living_room_thermostat", "preset_temperatures")[state_attr("climate.demo_living_room_thermostat", "preset_modes").index("eco")] }}'
       set_value :
         - action: general_thermostat.set_preset_temperature
@@ -258,7 +258,7 @@ template:
       max: '{{ state_attr("climate.demo_living_room_thermostat", "max_temp") | float(default=25) }}'
       step: '{{ state_attr("climate.demo_living_room_thermostat", "target_temp_step") | float(default=0.5) }}'
       unit_of_measurement: '°C'
-      icon: 'mdi:thermometer'
+      icon: 'mdi:account-arrow-right'
       state: '{{ state_attr("climate.demo_living_room_thermostat", "preset_temperatures")[state_attr("climate.demo_living_room_thermostat", "preset_modes").index("away")] }}'
       set_value :
         - action: general_thermostat.set_preset_temperature
@@ -272,7 +272,7 @@ template:
     # Number entity for cold_tolerance
     - name: "Demo Living room cold tolerance"
       min: 0
-      max: 99
+      max: 1
       step: 0.1
       unit_of_measurement: '°C'
       icon: 'mdi:arrow-collapse-down'
@@ -288,7 +288,7 @@ template:
     # Number entity for hot_tolerance
     - name: "Demo Living room hot tolerance"
       min: 0
-      max: 99
+      max: 1
       step: 0.1
       unit_of_measurement: '°C'
       icon: 'mdi:arrow-collapse-up'
