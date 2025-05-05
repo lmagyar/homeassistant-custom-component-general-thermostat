@@ -12,8 +12,8 @@ Changes:
 - Preset temperatures can be automatically updated by changing the target temperature (eg. on the dial)
   - New config option `auto_update_preset_modes` (also available as attribute)
   - Default all preset modes are included, to disable auto-update completely, set an empty value
-  - Auto-updates the preset temperature when that particular preset is selected and is in the auto_update_preset_modes
-  - This partially reverts breaking changes introduced in 2025.2 [Auto select thermostat preset when selecting temperature #134146](https://github.com/home-assistant/core/pull/134146) for auto_update_preset_modes
+  - Auto-updates the preset temperature when that particular preset is selected and is in the `auto_update_preset_modes`
+  - This partially reverts breaking changes introduced in 2025.2 [Auto select thermostat preset when selecting temperature #134146](https://github.com/home-assistant/core/pull/134146) for `auto_update_preset_modes`
 
 - Cold and hot tolerance can be changed
   - New `cold_tolerance` and `hot_tolerance` attributes
@@ -24,7 +24,7 @@ Changes:
 - New icon for the `activity` and the new `reduce` presets **Note:** You must add `unique_id` to the yaml config to make it work!
 - New config option `icon`
 
-- Bugfixes in the original generic_thermostat code:
+- Bugfixes in the original `generic_thermostat` code:
   - After restart recalculate the switch state, because sensor temperature maybe changed as much during restart that it requires it (because a restart can be caused by a longer power outage also)
   - After restart in preset mode don't restore wrong target temp when going back to none preset (original code stored the saved non-preset temperature only in memory)
 
