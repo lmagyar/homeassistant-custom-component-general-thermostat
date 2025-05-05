@@ -100,7 +100,7 @@ data:
 
 Full blown demo (with dummy temperature sensor and dummy thermostat switch):
 - `away` and `eco` preset modes' temperature are auto updated when these presets are selected
-- `home` and `eco` preset modes' temperature can be changed only by calling the `general_thermostat.set_preset_temperature` service / action (they behave like the official generic_thermostat)
+- `reduce`, `sleep`, `home` and `boost` preset modes' temperature can be changed only by calling the `general_thermostat.set_preset_temperature` service / action (they behave like the official generic_thermostat)
 - Number entities for preset temperatures, to change them even when the thermostat is not in that preset
 - Number entities for cold and hot tolerance
 
