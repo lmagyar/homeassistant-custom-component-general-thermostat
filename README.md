@@ -165,7 +165,7 @@ template:
           data:
             preset_mode: none
             temperature: '{{ value }}'
-      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
+      availability: '{{ has_value("climate.demo_living_room_thermostat") }}'
 
     # Number entity for boost preset temperature, to change it even when the thermostat is not in boost preset
     - name: "Demo Living room boost preset temperature"
@@ -182,7 +182,7 @@ template:
           data:
             preset_mode: boost
             temperature: '{{ value }}'
-      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
+      availability: '{{ has_value("climate.demo_living_room_thermostat") }}'
 
     # Number entity for home preset temperature, to change it even when the thermostat is not in home preset
     - name: "Demo Living room home preset temperature"
@@ -199,7 +199,7 @@ template:
           data:
             preset_mode: home
             temperature: '{{ value }}'
-      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
+      availability: '{{ has_value("climate.demo_living_room_thermostat") }}'
 
     # Number entity for sleep preset temperature, to change it even when the thermostat is not in sleep preset
     - name: "Demo Living room sleep preset temperature"
@@ -216,7 +216,7 @@ template:
           data:
             preset_mode: sleep
             temperature: '{{ value }}'
-      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
+      availability: '{{ has_value("climate.demo_living_room_thermostat") }}'
 
     # Number entity for reduce preset temperature, to change it even when the thermostat is not in reduce preset
     - name: "Demo Living room reduce preset temperature"
@@ -233,7 +233,7 @@ template:
           data:
             preset_mode: reduce
             temperature: '{{ value }}'
-      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
+      availability: '{{ has_value("climate.demo_living_room_thermostat") }}'
 
     # Number entity for eco preset temperature, to change it even when the thermostat is not in eco preset
     - name: "Demo Living room eco preset temperature"
@@ -250,7 +250,7 @@ template:
           data:
             preset_mode: eco
             temperature: '{{ value }}'
-      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
+      availability: '{{ has_value("climate.demo_living_room_thermostat") }}'
 
     # Number entity for away preset temperature, to change it even when the thermostat is not in away preset
     - name: "Demo Living room away preset temperature"
@@ -267,7 +267,7 @@ template:
           data:
             preset_mode: away
             temperature: '{{ value }}'
-      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
+      availability: '{{ has_value("climate.demo_living_room_thermostat") }}'
 
     # Number entity for cold_tolerance
     - name: "Demo Living room cold tolerance"
@@ -283,7 +283,7 @@ template:
             entity_id: climate.demo_living_room_thermostat
           data:
             cold_tolerance: '{{ value }}'
-      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
+      availability: '{{ has_value("climate.demo_living_room_thermostat") }}'
 
     # Number entity for hot_tolerance
     - name: "Demo Living room hot tolerance"
@@ -299,7 +299,7 @@ template:
             entity_id: climate.demo_living_room_thermostat
           data:
             hot_tolerance: '{{ value }}'
-      availability: '{{ states("climate.demo_living_room_thermostat") is not match("un\w*") }}'
+      availability: '{{ has_value("climate.demo_living_room_thermostat") }}'
 ```
 
 ### Dashboard section
